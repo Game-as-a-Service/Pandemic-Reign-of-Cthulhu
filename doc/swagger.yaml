@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: Pandemic - Reign of Cthulhu
+  version: 1.0.0
+externalDocs:
+  description: Discussion Docs
+  url: https://miro.com/app/board/uXjVMO8BrcQ=/?share_link_id=645659989265
+servers:
+  - url: https://petstore3.swagger.io/api/v3
+tags:
+  - name: init
+  - name: investigator
+  - name: action
+security:
+  - bearerAuth: []
+
+paths:
+  /games:
+    post:
+      summary: Create / initialize a new game
+      operationId: createGame
+      tags:
+        - init
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGameReq"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateGameRes"
+
+  /games/{gameId}/investigator/order:
+    get:
+      summary: Get random users order in choosing the investigator
+      operationId: findGameInvestigatorOrder
+      tags:
+        - init
+        - investigator
+      parameters:
+        - in: path
+          name: gameId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindGameInvestigatorOrderRes"
+
+  /games/{gameId}/investigator:
+    get:
+      summary: Get 2 investigators that are not yet chosen by users
+      operationId: findGameInvestigator
+      tags:
+        - init
+        - investigator
+      parameters:
+        - in: path
+          name: gameId
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindGameInvestigatorRes"
+
+components:
+  schemas:
+    CreateGameReq:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+    CreateGameRes:
+      type: object
+      properties:
+        url:
+          type: string
+    FindGameInvestigatorOrderRes:
+      type: array
+      items:
+        $ref: "#/components/schemas/PlayerOrder"
+    FindGameInvestigatorRes:
+      type: array
+      items:
+        type: object
+        properties:
+          investigator:
+            $ref: "#/components/schemas/Investigator"
+
+    Player:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nickname:
+          type: string
+    PlayerOrder:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        order:
+          type: integer
+
+    Investigator:
+      type: string
+      enum:
+        - detective
+        - doctor
+        - driver
+        - hunter
+        - magician
+        - occultist
+        - reporter
+
+    Clue:
+      type: string
+      enum:
+        - arkham
+        - dunwich
+        - kingsport
+        - innsmouth
+
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes
