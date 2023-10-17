@@ -2,7 +2,7 @@
 name = "backend"
 version = "0.1.0"
 description = ""
-authors = ["Han Woo <metalalive2008@gmail.com>"]
+authors = ["Maintainer <maintainer@thisproject.org>"]
 readme = "README.md"
 packages = [{include="app", from="."}]
 
@@ -19,6 +19,12 @@ hypercorn = "^0.14"
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.2"
 httpx = "^0.25"
+
+[tool.poetry.group.dev]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "0.1.0"
+black = "23.9.1"
 
 [build-system]
 requires = ["poetry-core"]

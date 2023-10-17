@@ -32,3 +32,13 @@ curl  --request POST --http2 \
 poetry run pytest -v ./tests/e2e/game.py
 ```
 
+### Linter
+```bash
+poetry run ruff check ./app/
+```
+
+### Formatter
+```bash
+poetry run black  ./app/
+```
+
