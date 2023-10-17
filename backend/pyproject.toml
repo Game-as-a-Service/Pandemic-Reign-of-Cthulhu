@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["Han Woo <metalalive2008@gmail.com>"]
+readme = "README.md"
+packages = [{include="app", from="."}]
+
+[tool.poetry.scripts]
+webapp-dev = "app.adapter.api:start_web_app"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.103.2"
+hypercorn = "^0.14"
+
+[tool.poetry.group.test]
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
+httpx = "^0.25"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
