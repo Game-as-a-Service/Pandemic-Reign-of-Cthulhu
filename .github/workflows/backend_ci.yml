@@ -1,0 +1,36 @@
+name: Python Package build test
+
+on: 
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12.0'
+    - name: Install poerty
+      uses: abatilo/actions-poetry@v2
+      with:
+          poetry-version: '1.6.1'
+    - name: Install dependencies by poerty
+      run: |
+        cd backend
+        poetry install
+    - name: Run linter by ruff
+      run: |
+        cd backend
+        poetry run ruff check -v app
+    - name: Run test by pytest
+      run: |
+        cd backend
+        poetry run pytest -v tests
