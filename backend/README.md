@@ -29,7 +29,7 @@ curl  --request POST --http2 \
 
 ### Test
 ```bash
-poetry run pytest -v ./tests/e2e/game.py
+poetry run pytest -v ./tests/e2e/test_game.py
 ```
 
 ### Linter
