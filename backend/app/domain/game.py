@@ -26,7 +26,7 @@ class Game:
         self._difficulty: Difficulty = difficult_level
         self._players: List[Player] = []
 
-    def add_players(self, players: List[PlayerDto]):
+    def add_players(self, player_dtos: List[PlayerDto]):
         # TODO,
         # - convert to player domain models
         # - return error if necessary
