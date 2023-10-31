@@ -78,6 +78,140 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FindGameInvestigatorRes"
+    patch:
+      summary: Update the selected investigator for a player
+      description: Updates the selected investigator for a player in a game identified by gameId.
+      tags:
+        - init
+      parameters:
+        - name: gameId
+          in: path
+          description: ID of the game
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: JSON object to specify the investigator
+        required: true
+        content:
+          application/json:
+            example:
+              investigator: hunter
+            schema:
+              type: object
+              properties:
+                investigator:
+                  type: string
+                  enum:
+                    - detective
+                    - doctor
+                    - driver
+                    - hunter
+                    - magician
+                    - occultist
+                    - reporter
+                  example: detective
+      responses:
+        '200':
+          description: Investigator selected successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                reason: investigator-already-chosen
+              schema:
+                type: object
+                properties:
+                  reason:
+                    type: string
+                    enum:
+                      - investigator-already-chosen
+                      - invalid-player
+                      - invalid-investigator
+                example: investigator-already-chosen
+                
+  /games/{gameId}/difficulty:
+    patch:
+      summary: Update the difficulty level for a game
+      description: Updates the difficulty level for a game identified by gameId.
+      tags:
+        - init
+      parameters:
+        - name: gameId
+          in: path
+          description: ID of the game
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: JSON object to specify the difficulty level
+        required: true
+        content:
+          application/json:
+            example:
+              level: introductory
+            schema:
+              type: object
+              properties:
+                level:
+                  type: string
+                  enum:
+                    - introductory
+                    - standard
+                    - expert
+                  example: introductory
+      responses:
+        '200':
+          description: Difficulty level updated successfully
+          
+  /games/{gameId}/start:
+    patch:
+      summary: Notify the backend that a player is ready to play
+      description: Informs the backend that a player with the specified ID is ready to start the game.
+      tags:
+        - init
+      parameters:
+        - name: gameId
+          in: path
+          description: ID of the game
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Player readiness status, return list of player IDs who are ready
+          content:
+            application/json:
+              example:
+                ready: ["player-id-01", "player-id-02"]
+                not_ready: ["player-id-03", "player-id-04"]
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: array
+                    items:
+                      type: string
+                  not_ready:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                reason: invalid-player
+              schema:
+                type: object
+                properties:
+                  reason:
+                    type: string
+                    enum:
+                      - invalid-player
+                      - invalid-game-id
+                example: invalid-player
 
 components:
   schemas:
