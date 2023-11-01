@@ -1,6 +1,6 @@
 import pytest
 from app.dto import PlayerDto
-from app.domain import Game
+from app.domain import Game, GameError
 from app.adapter.repository import AbstractRepository
 from app.usecase import CreateGameUseCase
 
@@ -47,3 +47,35 @@ class TestCreateGame:
             assert 0
         except UnitTestError as e:
             assert e.args[0] == "unit-test"
+
+    @pytest.mark.asyncio
+    async def test_only_one_player(self):
+        repository = MockRepository()
+        settings = {"host": "unit.test.app.com"}
+        data = [
+            PlayerDto(id="x8eu3L", nickname="Sheep"),
+        ]
+        uc = CreateGameUseCase(repository, settings)
+        try:
+            resp = await uc.execute(data)  # noqa: F841
+            assert 0
+        except GameError as e:
+            assert e.args[0] == "incorrect-number-of-players"
+
+    @pytest.mark.asyncio
+    async def test_over_four_player(self):
+        repository = MockRepository()
+        settings = {"host": "unit.test.app.com"}
+        data = [
+            PlayerDto(id="x8eu3L", nickname="Sheep"),
+            PlayerDto(id="8e1u3g", nickname="Lamb"),
+            PlayerDto(id="h4oOp0", nickname="Llama"),
+            PlayerDto(id="R0fj1B", nickname="Goat"),
+            PlayerDto(id="oC9TNH", nickname="Alpaca"),
+        ]
+        uc = CreateGameUseCase(repository, settings)
+        try:
+            resp = await uc.execute(data)  # noqa: F841
+            assert 0
+        except GameError as e:
+            assert e.args[0] == "incorrect-number-of-players"

@@ -17,7 +17,7 @@ class CreateGameUseCase(AbstractUseCase):
         # Platform in GaaS, the Lobby Platform backend is responsible
         # to send appropriate number of players to this game backend,
         # it does so by referring to the profile provided in game registration
-        game.add_players(data[: Game.MAX_NUM_PLAYERS])
+        game.add_players(data)
         errors = self.rand_select_investigator(game)
         assert len(errors) == 0
         await self.repository.save(game)
@@ -25,11 +25,13 @@ class CreateGameUseCase(AbstractUseCase):
         return CreateGameRespDto(url=url)
 
     def rand_select_investigator(self, game: Game) -> List[GameError]:
-        options = random.shuffle(list(Investigator))
+        options = list(Investigator)
+        random.shuffle(options)
 
         def fn1(p):
             c = options.pop(0)
-            return game.assign_character(p, c)
+            p.set_investigator(c)
+            return game.assign_character(c)
 
         def fn2(err):
             return err is not None
