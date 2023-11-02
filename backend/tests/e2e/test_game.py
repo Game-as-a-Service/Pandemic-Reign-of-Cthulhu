@@ -17,7 +17,12 @@ def test_client():
 class TestGame:
     def test_create_game_ok(self, test_client):
         url = "/games"
-        reqbody = {"players": [{"id": "9487", "nickname": "cowbell"}]}
+        reqbody = {
+            "players": [
+                {"id": "9487", "nickname": "Sheep"},
+                {"id": "9527", "nickname": "Goat"},
+            ]
+        }
         response = test_client.post(url, headers={}, json=reqbody)
         assert response.status_code == 200
         respbody = response.json()

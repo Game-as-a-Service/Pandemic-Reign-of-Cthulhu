@@ -1,1 +1,1 @@
-from .game import Game, GameError, Investigator  # noqa: F401
+from .game import Game, GameError, Investigator, Player  # noqa: F401
