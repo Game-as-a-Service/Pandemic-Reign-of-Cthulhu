@@ -63,9 +63,9 @@ class Game:
         self._players = players
 
     @property
-    def id(self):
+    def id(self) -> str:
         if self._id is None:
-            self._id = uuid4()
+            self._id = str(uuid4())
         return self._id
 
     @property
