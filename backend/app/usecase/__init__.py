@@ -1,1 +1,1 @@
-from .create_game import CreateGameUseCase  # noqa: F401
+from .config_game import CreateGameUseCase, ReadInvestigatorUseCase  # noqa: F401

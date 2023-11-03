@@ -1,11 +1,11 @@
 import random
 from typing import List, Dict
-from app.dto import PlayerDto, CreateGameRespDto
-from app.domain import Game, GameError, Investigator
+from app.dto import PlayerDto, CreateGameRespDto, Investigator
+from app.domain import Game, GameError
 
 
 class AbstractUseCase:
-    def __init__(self, repository, settings: Dict):
+    def __init__(self, repository, settings: Dict = None):
         self.repository = repository
         self.settings = settings
 
@@ -38,3 +38,16 @@ class CreateGameUseCase(AbstractUseCase):
 
         iterator = filter(fn2, map(fn1, game.players))
         return list(iterator)
+
+
+class ReadInvestigatorUseCase(AbstractUseCase):
+    async def execute(self, game_id: str, num: int) -> List[Investigator]:
+        game = await self.repository.get_game(game_id)
+        if game:
+            invstgs = game.characters
+            unselected = [
+                i_name for i_name, selected in invstgs.items() if not selected
+            ]
+            return unselected[:num]
+        else:
+            return []

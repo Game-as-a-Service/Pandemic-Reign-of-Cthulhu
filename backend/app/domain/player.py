@@ -9,3 +9,7 @@ class Player:
 
     def get_investigator(self):
         return self._investigator
+
+    @property
+    def id(self):
+        return self._id

@@ -1,17 +1,24 @@
 import pytest
-from app.dto import PlayerDto
+from app.dto import PlayerDto, Investigator
 from app.domain import Game, GameError
 from app.adapter.repository import AbstractRepository
-from app.usecase import CreateGameUseCase
+from app.usecase import CreateGameUseCase, ReadInvestigatorUseCase
 
 
 class MockRepository(AbstractRepository):
-    def __init__(self, save_error=None):
+    def __init__(self, save_error=None, mock_fetched: Game = None):
         self._save_error = save_error
+        self._mock_fetched = mock_fetched
 
     async def save(self, game: Game):
         if self._save_error:
             raise self._save_error
+
+    async def get_game(self, game_id: str) -> Game:
+        if self._mock_fetched:
+            return self._mock_fetched
+        else:
+            raise UnitTestError("MockRepository.get_game")
 
 
 class UnitTestError(Exception):
@@ -79,3 +86,52 @@ class TestCreateGame:
             assert 0
         except GameError as e:
             assert e.args[0] == "incorrect-number-of-players"
+
+
+class TestReadInvestigatorFromGame:
+    @pytest.mark.asyncio
+    async def test_selected_ok(self):
+        mockgame = Game()
+        data = [
+            PlayerDto(id="x8eu3L", nickname="Sheep"),
+            PlayerDto(id="8e1u3g", nickname="Lamb"),
+        ]
+        assert mockgame.add_players(player_dtos=data) is None
+        repository = MockRepository(mock_fetched=mockgame)
+        uc = ReadInvestigatorUseCase(repository)
+
+        # --- sub case 1, the first player selected
+        player = mockgame.get_player("x8eu3L")
+        assert player is not None
+        expect_chosen_role = Investigator.DOCTOR
+        assert mockgame.assign_character(expect_chosen_role) is None
+        player.set_investigator(expect_chosen_role)
+        result = await uc.execute(mockgame.id, 99)  # noqa: F841
+        assert len(result) == 6
+        assert expect_chosen_role not in result
+
+        # --- sub case 2, the 2nd player selected
+        player = mockgame.get_player("8e1u3g")
+        assert player is not None
+        expect_chosen_role = Investigator.DETECTIVE
+        assert mockgame.assign_character(expect_chosen_role) is None
+        player.set_investigator(expect_chosen_role)
+        result = await uc.execute(mockgame.id, 99)  # noqa: F841
+        assert len(result) == 5
+        assert Investigator.DOCTOR not in result
+        assert Investigator.DETECTIVE not in result
+
+    @pytest.mark.asyncio
+    async def test_limit_return_sequence(self):
+        mockgame = Game()
+        data = [
+            PlayerDto(id="x8eu3L", nickname="Sheep"),
+            PlayerDto(id="8e1u3g", nickname="Lamb"),
+        ]
+        assert mockgame.add_players(player_dtos=data) is None
+        repository = MockRepository(mock_fetched=mockgame)
+        uc = ReadInvestigatorUseCase(repository)
+        result = await uc.execute(mockgame.id, 2)  # noqa: F841
+        assert len(result) == 2
+        result = await uc.execute(mockgame.id, 3)  # noqa: F841
+        assert len(result) == 3
