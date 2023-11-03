@@ -95,22 +95,17 @@ paths:
         required: true
         content:
           application/json:
-            example:
-              investigator: hunter
             schema:
               type: object
               properties:
-                investigator:
+                player_id:
                   type: string
-                  enum:
-                    - detective
-                    - doctor
-                    - driver
-                    - hunter
-                    - magician
-                    - occultist
-                    - reporter
-                  example: detective
+                  example: '0b18-9d2140-a114'
+                investigator:
+                  $ref: "#/components/schemas/Investigator"
+              required:
+                - investigator
+                - player_id
       responses:
         '200':
           description: Investigator selected successfully
@@ -149,8 +144,6 @@ paths:
         required: true
         content:
           application/json:
-            example:
-              level: introductory
             schema:
               type: object
               properties:
