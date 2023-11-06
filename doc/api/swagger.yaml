@@ -6,6 +6,7 @@ externalDocs:
   description: Discussion Docs
   url: https://miro.com/app/board/uXjVMO8BrcQ=/?share_link_id=645659989265
 servers:
+  - url: http://127.0.0.1:8081
   - url: https://petstore3.swagger.io/api/v3
 tags:
   - name: init
@@ -220,8 +221,11 @@ components:
       properties:
         players:
           type: array
+          description: number of players has to be 2, 3 and 4 within a game.
           items:
-            $ref: "#/components/schemas/Player"
+            anyOf:
+            - $ref: "#/components/schemas/Player"
+            - $ref: "#/components/schemas/Player"
     CreateGameRes:
       type: object
       properties:
