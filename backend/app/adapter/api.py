@@ -9,10 +9,10 @@ from app.dto import (
     CreateGameReqDto,
     CreateGameRespDto,
     ListInvestigatorsDto,
-    SingleInvestigatorDto,
 )
-from app.usecase import CreateGameUseCase, ReadInvestigatorUseCase
+from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
 from app.adapter.repository import get_repository
+from app.adapter.presenter import read_investigator_presenter
 
 _router = APIRouter(
     prefix="",  # could be API versioning e.g. /v0.0.1/* ,  /v2.0.1/*
@@ -43,13 +43,9 @@ async def create_game(req: CreateGameReqDto):
     response_model=ListInvestigatorsDto,
 )
 async def read_unselected_investigators(game_id: str):
-    uc = ReadInvestigatorUseCase(shared_context["repository"])
-    result = await uc.execute(game_id, 2)
-
-    def presenter(v):
-        return SingleInvestigatorDto(investigator=v)
-
-    return list(map(presenter, result))
+    uc = GetAvailableInvestigatorsUseCase(shared_context["repository"])
+    result = await uc.execute(game_id, read_investigator_presenter)
+    return result
 
 
 @asynccontextmanager

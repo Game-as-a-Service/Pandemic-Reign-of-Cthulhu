@@ -65,10 +65,6 @@ class Game:
         except StopIteration:
             return None
 
-    @property
-    def characters(self):
-        return self._investigators
-
     def assign_character(self, investigator: Investigator) -> Optional[GameError]:
         if investigator not in self._investigators:
             return GameError("invalid-investigator")
@@ -78,3 +74,8 @@ class Game:
 
         self._investigators[investigator] = True
         return None
+
+    def filter_unselected_investigators(self, num: int) -> List[Investigator]:
+        invstgs = self._investigators
+        unselected = [i_name for i_name, selected in invstgs.items() if not selected]
+        return unselected[:num]
