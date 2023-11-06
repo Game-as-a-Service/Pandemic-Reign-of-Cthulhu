@@ -38,40 +38,46 @@ def test_assign_not_exist(game):
     assert err.args[0] == "invalid-investigator"
 
 
-def test_filter_unselected_all(game):
+# 用parametrize來設置不同的測試案例和期望結果
+@pytest.mark.parametrize(
+    "assignments, limit, expected_lengths, expected_not_in_results",
+    [
+        # 測試案例1: 當所有調查員都未選擇時
+        ([], 6, [6], []),
+        # 測試案例2: 當第一個玩家選擇了一個調查員時
+        ([("x8eu3L", Investigator.DOCTOR)], 6, [6], [Investigator.DOCTOR]),
+        # 測試案例3: 當兩個玩家都選擇了不同的調查員時
+        (
+            [("x8eu3L", Investigator.DOCTOR), ("8e1u3g", Investigator.DETECTIVE)],
+            99,
+            [5],
+            [Investigator.DOCTOR, Investigator.DETECTIVE],
+        ),
+        # 測試案例4: 限制數量的案例
+        ([], 2, [2], []),
+        ([], 3, [3], []),
+    ],
+)
+def test_filter_unselected(
+    game, assignments, limit, expected_lengths, expected_not_in_results
+):
+    # 設置玩家
     data = [
         PlayerDto(id="x8eu3L", nickname="Sheep"),
         PlayerDto(id="8e1u3g", nickname="Lamb"),
     ]
     assert game.add_players(player_dtos=data) is None
-    # --- sub case 1, the first player selected
-    player = game.get_player("x8eu3L")
-    assert player is not None
-    expect_chosen_role = Investigator.DOCTOR
-    assert game.assign_character(expect_chosen_role) is None
-    player.set_investigator(expect_chosen_role)
-    result = game.filter_unselected_investigators(6)
-    assert len(result) == 6
-    assert expect_chosen_role not in result
-    # --- sub case 2, the 2nd player selected
-    player = game.get_player("8e1u3g")
-    assert player is not None
-    expect_chosen_role = Investigator.DETECTIVE
-    assert game.assign_character(expect_chosen_role) is None
-    player.set_investigator(expect_chosen_role)
-    result = game.filter_unselected_investigators(99)
-    assert len(result) == 5
-    assert Investigator.DOCTOR not in result
-    assert Investigator.DETECTIVE not in result
 
+    # 分配調查員給指定的玩家
+    for player_id, role in assignments:
+        player = game.get_player(player_id)
+        assert player is not None
+        assert game.assign_character(role) is None
+        player.set_investigator(role)
 
-def test_filter_unselected_limit(game):
-    data = [
-        PlayerDto(id="x8eu3L", nickname="Sheep"),
-        PlayerDto(id="8e1u3g", nickname="Lamb"),
-    ]
-    assert game.add_players(player_dtos=data) is None
-    result = game.filter_unselected_investigators(2)
-    assert len(result) == 2
-    result = game.filter_unselected_investigators(3)
-    assert len(result) == 3
+    # 測試不同的限制條件
+    for expected_length in expected_lengths:
+        result = game.filter_unselected_investigators(limit)
+        assert len(result) == expected_length
+        for role in expected_not_in_results:
+            assert role not in result
