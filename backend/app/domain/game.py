@@ -2,7 +2,7 @@ from enum import Enum, auto
 from typing import List, Optional
 from uuid import uuid4
 
-from app.dto import PlayerDto
+from app.dto import PlayerDto, Investigator
 from .player import Player
 
 
@@ -13,23 +13,6 @@ class Difficulty(Enum):
     STANDARD = auto()
     # 專家難度
     EXPERT = auto()
-
-
-class Investigator(Enum):
-    # 偵探
-    DETECTIVE = auto()
-    # 博士
-    DOCTOR = auto()
-    # 司機
-    DRIVER = auto()
-    # 獵人
-    HUNTER = auto()
-    # 魔術師
-    MAGICIAN = auto()
-    # 神祕學家
-    OCCULTIST = auto()
-    # 記者
-    REPORTER = auto()
 
 
 class GameError(Exception):
@@ -72,6 +55,16 @@ class Game:
     def players(self) -> List[Player]:
         return self._players
 
+    def get_player(self, pid: str) -> Optional[Player]:
+        def match_chk(p):
+            return p.id == pid
+
+        iterator = filter(match_chk, self._players)
+        try:
+            return next(iterator)
+        except StopIteration:
+            return None
+
     def assign_character(self, investigator: Investigator) -> Optional[GameError]:
         if investigator not in self._investigators:
             return GameError("invalid-investigator")
@@ -80,5 +73,9 @@ class Game:
             return GameError("investigator-already-chosen")
 
         self._investigators[investigator] = True
-
         return None
+
+    def filter_unselected_investigators(self, num: int) -> List[Investigator]:
+        invstgs = self._investigators
+        unselected = [i_name for i_name, selected in invstgs.items() if not selected]
+        return unselected[:num]

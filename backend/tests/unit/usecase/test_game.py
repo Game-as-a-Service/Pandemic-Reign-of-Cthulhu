@@ -1,17 +1,24 @@
 import pytest
-from app.dto import PlayerDto
+from app.dto import PlayerDto, SingleInvestigatorDto, ListInvestigatorsDto
 from app.domain import Game, GameError
 from app.adapter.repository import AbstractRepository
-from app.usecase import CreateGameUseCase
+from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
 
 
 class MockRepository(AbstractRepository):
-    def __init__(self, save_error=None):
+    def __init__(self, save_error=None, mock_fetched: Game = None):
         self._save_error = save_error
+        self._mock_fetched = mock_fetched
 
     async def save(self, game: Game):
         if self._save_error:
             raise self._save_error
+
+    async def get_game(self, game_id: str) -> Game:
+        if self._mock_fetched:
+            return self._mock_fetched
+        else:
+            raise UnitTestError("MockRepository.get_game")
 
 
 class UnitTestError(Exception):
@@ -79,3 +86,20 @@ class TestCreateGame:
             assert 0
         except GameError as e:
             assert e.args[0] == "incorrect-number-of-players"
+
+
+class TestGetAvailInvestigatorFromGame:
+    @pytest.mark.asyncio
+    async def test_unselected_ok(self):
+        mockgame = Game()
+        repository = MockRepository(mock_fetched=mockgame)
+        uc = GetAvailableInvestigatorsUseCase(repository)
+
+        def mock_presenter(items) -> ListInvestigatorsDto:
+            def fn1(v):
+                return SingleInvestigatorDto(investigator=v)
+
+            return list(map(fn1, items))
+
+        result = await uc.execute(mockgame.id, mock_presenter)  # noqa: F841
+        assert len(result) == 2

@@ -5,9 +5,14 @@ from fastapi import FastAPI, APIRouter, status as FastApiHTTPstatus
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
 
-from app.dto import CreateGameReqDto, CreateGameRespDto
-from app.usecase import CreateGameUseCase
+from app.dto import (
+    CreateGameReqDto,
+    CreateGameRespDto,
+    ListInvestigatorsDto,
+)
+from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
 from app.adapter.repository import get_repository
+from app.adapter.presenter import read_investigator_presenter
 
 _router = APIRouter(
     prefix="",  # could be API versioning e.g. /v0.0.1/* ,  /v2.0.1/*
@@ -30,6 +35,17 @@ async def create_game(req: CreateGameReqDto):
     )
     response = await uc.execute(req.players)
     return response
+
+
+@_router.get(
+    "/games/{game_id}/investigator",
+    status_code=200,
+    response_model=ListInvestigatorsDto,
+)
+async def read_unselected_investigators(game_id: str):
+    uc = GetAvailableInvestigatorsUseCase(shared_context["repository"])
+    result = await uc.execute(game_id, read_investigator_presenter)
+    return result
 
 
 @asynccontextmanager
