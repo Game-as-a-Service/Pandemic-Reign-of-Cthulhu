@@ -27,6 +27,37 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateGameReq"
+            examples:
+              twoPlayers:
+                summary: Example with two players
+                value: 
+                  players: 
+                    - id: "123e4567-e89b-12d3-a456-426614174000"
+                      nickname: "Sheep"
+                    - id: "45714dc7-9657-4ca2-bf8a-dd026325423d"
+                      nickname: "Goat"
+              threePlayers:
+                summary: Example with three players
+                value: 
+                  players: 
+                    - id: "123e4567-e89b-12d3-a456-426614174000"
+                      nickname: "Sheep"
+                    - id: "d4719d5a-2483-43d7-a8b7-7c76e8b3fdae"
+                      nickname: "Lamb"
+                    - id: "bb9d5a48-3fa8-47e2-b3fc-2c963f66afa6"
+                      nickname: "Llama"
+              fourPlayers:
+                summary: Example with four players
+                value: 
+                  players: 
+                    - id: "123e4567-e89b-12d3-a456-426614174000"
+                      nickname: "Sheep"
+                    - id: "d4719d5a-2483-43d7-a8b7-7c76e8b3fdae"
+                      nickname: "Lamb"
+                    - id: "bb9d5a48-3fa8-47e2-b3fc-2c963f66afa6"
+                      nickname: "Llama"
+                    - id: "45714dc7-9657-4ca2-bf8a-dd026325423d"
+                      nickname: "Goat"
         required: true
       responses:
         "200":
@@ -221,11 +252,12 @@ components:
       properties:
         players:
           type: array
+          minItems: 2 
+          maxItems: 4
+          uniqueItems: true
           description: number of players has to be 2, 3 and 4 within a game.
           items:
-            anyOf:
-            - $ref: "#/components/schemas/Player"
-            - $ref: "#/components/schemas/Player"
+            $ref: "#/components/schemas/Player"
     CreateGameRes:
       type: object
       properties:
@@ -245,10 +277,13 @@ components:
 
     Player:
       type: object
+      required:
+        - id 
       properties:
         id:
           type: string
           format: uuid
+          description: Unique identifier for each player.
         nickname:
           type: string
     PlayerOrder:
