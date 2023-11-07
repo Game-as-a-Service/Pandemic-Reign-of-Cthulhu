@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, APIRouter, status as FastApiHTTPstatus
+from fastapi.responses import JSONResponse
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
 
@@ -9,8 +10,13 @@ from app.dto import (
     CreateGameReqDto,
     CreateGameRespDto,
     ListInvestigatorsDto,
+    UpdateInvestigatorDto,
 )
-from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
+from app.usecase import (
+    CreateGameUseCase,
+    GetAvailableInvestigatorsUseCase,
+    SwitchInvestigatorUseCase,
+)
 from app.adapter.repository import get_repository
 from app.adapter.presenter import read_investigator_presenter
 
@@ -46,6 +52,14 @@ async def read_unselected_investigators(game_id: str):
     uc = GetAvailableInvestigatorsUseCase(shared_context["repository"])
     result = await uc.execute(game_id, read_investigator_presenter)
     return result
+
+
+@_router.patch("/games/{game_id}/investigator", status_code=200)
+async def swtich_investigator(game_id: str, req: UpdateInvestigatorDto):
+    uc = SwitchInvestigatorUseCase(shared_context["repository"])
+    error = await uc.execute(game_id, req.player_id, req.investigator)
+    if error:
+        return JSONResponse(status_code=400, content={"reason": error.args[0]})
 
 
 @asynccontextmanager

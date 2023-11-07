@@ -81,3 +81,136 @@ def test_filter_unselected(
         assert len(result) == expected_length
         for role in expected_not_in_results:
             assert role not in result
+
+
+@pytest.mark.parametrize(
+    "ut_data",
+    [
+        (
+            [
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.HUNTER,
+                    "actual": Investigator.HUNTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DETECTIVE,
+                    "actual": Investigator.DETECTIVE,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.HUNTER,
+                    "actual": Investigator.HUNTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.REPORTER,
+                    "actual": Investigator.REPORTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.REPORTER,
+                    "actual": Investigator.REPORTER,
+                    "error": None,
+                },
+            ]
+        ),
+        (
+            [
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.MAGICIAN,
+                    "actual": Investigator.MAGICIAN,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.DRIVER,
+                    "actual": None,
+                    "error": "investigator-already-chosen",
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.MAGICIAN,
+                    "error": "investigator-already-chosen",
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.OCCULTIST,
+                    "actual": Investigator.OCCULTIST,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.OCCULTIST,
+                    "actual": Investigator.DRIVER,
+                    "error": "investigator-already-chosen",
+                },
+            ]
+        ),
+        (
+            [
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": 12345,
+                    "actual": Investigator.DRIVER,
+                    "error": "invalid-investigator",
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": 9999,
+                    "actual": None,
+                    "error": "invalid-investigator",
+                },
+            ]
+        ),
+    ],
+)  # end of pytest parameter set
+def test_switch_to_unselected(game, ut_data):
+    setup_data = [
+        PlayerDto(id="x8eu3L", nickname="Sheep"),
+        PlayerDto(id="8e1u3g", nickname="Lamb"),
+        PlayerDto(id="e1u30B", nickname="Llama"),
+    ]
+    assert game.add_players(player_dtos=setup_data) is None
+    for p in game.players:
+        assert p.get_investigator() is None
+
+    for d in ut_data:
+        result = game.switch_character(d["player_id"], d["expect"])
+        if result:
+            assert result.args[0] == d["error"]
+        else:
+            assert result is d["error"]
+        player = game.get_player(d["player_id"])
+        assert player.get_investigator() == d["actual"]

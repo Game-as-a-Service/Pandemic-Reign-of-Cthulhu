@@ -44,3 +44,23 @@ class TestGame:
         assert response.status_code == 200
         unselected_roles = response.json()
         assert len(unselected_roles) == 2
+        reqbody = {
+            "investigator": unselected_roles[0]["investigator"],
+            "player_id": "9527",
+        }
+        response = test_client.patch(url.format(game_id), headers={}, json=reqbody)
+        assert response.status_code == 200
+        reqbody = {
+            "investigator": unselected_roles[1]["investigator"],
+            "player_id": "9487",
+        }
+        response = test_client.patch(url.format(game_id), headers={}, json=reqbody)
+        assert response.status_code == 200
+        reqbody = {
+            "investigator": unselected_roles[1]["investigator"],
+            "player_id": "9527",
+        }
+        response = test_client.patch(url.format(game_id), headers={}, json=reqbody)
+        assert response.status_code == 400
+        error_detail = response.json()
+        assert error_detail["reason"] == "investigator-already-chosen"

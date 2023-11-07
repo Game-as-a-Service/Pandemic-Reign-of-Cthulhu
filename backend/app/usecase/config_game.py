@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Callable, Iterable
+from typing import List, Dict, Optional, Callable, Iterable
 from app.dto import PlayerDto, CreateGameRespDto, Investigator, ListInvestigatorsDto
 from app.domain import Game, GameError
 
@@ -47,3 +47,20 @@ class GetAvailableInvestigatorsUseCase(AbstractUseCase):
         game = await self.repository.get_game(game_id)
         unselected = game.filter_unselected_investigators(2) if game else []
         return presenter(unselected)
+
+
+class SwitchInvestigatorUseCase(AbstractUseCase):
+    async def execute(
+        self, game_id: str, player_id: str, new_invstg: Investigator
+    ) -> Optional[GameError]:
+        game = await self.repository.get_game(game_id)
+        if game is None:
+            return GameError("invalid-game")
+        # NOTE, the character state transition should be done atomically, typically
+        # relational / non-relational databases can handle this for app developers due
+        # to the ACID properties. However for in-memory data store, app developer
+        # should be aware of race condition and data inconsistency issue .
+
+        result = game.switch_character(player_id, new_invstg)
+        await self.repository.save(game)
+        return result

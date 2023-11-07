@@ -75,6 +75,32 @@ class Game:
         self._investigators[investigator] = True
         return None
 
+    def _clear_character_selection(
+        self, investigator: Investigator
+    ) -> Optional[GameError]:
+        # TODO, figure out better design options
+        if investigator in self._investigators:
+            self._investigators[investigator] = False
+        else:
+            return GameError("invalid-investigator")
+
+    def switch_character(
+        self, player_id: str, new_invstg: Investigator
+    ) -> Optional[GameError]:
+        player = self.get_player(player_id)
+        if player is None:
+            return GameError("invalid-player")
+        old_invstg = player.get_investigator()
+        error = self._clear_character_selection(old_invstg) if old_invstg else None
+        if error is None:
+            error = self.assign_character(new_invstg)
+            if error is None:
+                player.set_investigator(new_invstg)
+            else:  # error happened, roll back to previous state
+                if old_invstg:
+                    assert self.assign_character(old_invstg) is None
+        return error
+
     def filter_unselected_investigators(self, num: int) -> List[Investigator]:
         invstgs = self._investigators
         unselected = [i_name for i_name, selected in invstgs.items() if not selected]
