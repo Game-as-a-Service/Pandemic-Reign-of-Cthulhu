@@ -15,8 +15,35 @@ class Difficulty(Enum):
     EXPERT = auto()
 
 
+class GameErrorCodes(Enum):
+    """
+    Elements for each tuple
+     - application-level error code
+     - HTTP response status code
+    """
+
+    INCORECT_NUM_PLAYERS = (1001, 400)
+    INVALID_INVESTIGATOR = (1002, 400)
+    INVESTIGATOR_CHOSEN = (1003, 409)
+    INVALID_PLAYER = (1004, 422)
+    GAME_NOT_FOUND = (1005, 404)
+
+
+class GameFuncCodes(Enum):
+    ADD_PLAYERS = 1001
+    ASSIGN_CHARACTER = 1002
+    SWITCH_CHARACTER = 1003
+    CLEAR_CHARACTER_SELECTION = 1004
+    USE_CASE_EXECUTE = 1099  ## TODO, rename this
+
+
 class GameError(Exception):
-    pass
+    def __init__(
+        self, e_code: GameFuncCodes, fn_code: GameFuncCodes, msg: Optional[str] = None
+    ):
+        self.error_code: GameFuncCodes = e_code
+        self.func_code: GameFuncCodes = fn_code
+        self.message = msg
 
 
 class Game:
@@ -33,7 +60,7 @@ class Game:
         for i in Investigator:
             self._investigators[i] = False
 
-    def add_players(self, player_dtos: List[PlayerDto]) -> Optional[GameError]:
+    def add_players(self, player_dtos: List[PlayerDto]):
         players = []
 
         for dto in player_dtos:
@@ -41,7 +68,10 @@ class Game:
             players.append(player)
 
         if len(players) < self.MIN_NUM_PLAYERS or len(players) > self.MAX_NUM_PLAYERS:
-            raise GameError("incorrect-number-of-players")
+            raise GameError(
+                e_code=GameErrorCodes.INCORECT_NUM_PLAYERS,
+                fn_code=GameFuncCodes.ADD_PLAYERS,
+            )
 
         self._players = players
 
@@ -65,41 +95,49 @@ class Game:
         except StopIteration:
             return None
 
-    def assign_character(self, investigator: Investigator) -> Optional[GameError]:
+    def assign_character(self, investigator: Investigator):
         if investigator not in self._investigators:
-            return GameError("invalid-investigator")
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_INVESTIGATOR,
+                fn_code=GameFuncCodes.ASSIGN_CHARACTER,
+            )
 
         if self._investigators[investigator]:
-            return GameError("investigator-already-chosen")
+            raise GameError(
+                e_code=GameErrorCodes.INVESTIGATOR_CHOSEN,
+                fn_code=GameFuncCodes.ASSIGN_CHARACTER,
+            )
 
         self._investigators[investigator] = True
-        return None
 
-    def _clear_character_selection(
-        self, investigator: Investigator
-    ) -> Optional[GameError]:
+    def _clear_character_selection(self, investigator: Investigator):
         # TODO, figure out better design options
-        if investigator in self._investigators:
-            self._investigators[investigator] = False
-        else:
-            return GameError("invalid-investigator")
+        if investigator not in self._investigators:
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_INVESTIGATOR,
+                fn_code=GameFuncCodes.CLEAR_CHARACTER_SELECTION,
+            )
 
-    def switch_character(
-        self, player_id: str, new_invstg: Investigator
-    ) -> Optional[GameError]:
+        self._investigators[investigator] = False
+
+    def switch_character(self, player_id: str, new_invstg: Investigator):
         player = self.get_player(player_id)
         if player is None:
-            return GameError("invalid-player")
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_PLAYER,
+                fn_code=GameFuncCodes.SWITCH_CHARACTER,
+            )
         old_invstg = player.get_investigator()
-        error = self._clear_character_selection(old_invstg) if old_invstg else None
-        if error is None:
-            error = self.assign_character(new_invstg)
-            if error is None:
-                player.set_investigator(new_invstg)
-            else:  # error happened, roll back to previous state
-                if old_invstg:
-                    assert self.assign_character(old_invstg) is None
-        return error
+        try:
+            if old_invstg:
+                self._clear_character_selection(old_invstg)
+            self.assign_character(new_invstg)
+            player.set_investigator(new_invstg)
+        except GameError as e:
+            if old_invstg and e.func_code == GameFuncCodes.ASSIGN_CHARACTER:
+                # roll back to previous state
+                self.assign_character(old_invstg)
+            raise
 
     def filter_unselected_investigators(self, num: int) -> List[Investigator]:
         invstgs = self._investigators

@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.adapter.api import init_app_server
+from app.domain import GameErrorCodes
 
 
 @pytest.fixture(scope="session")
@@ -37,6 +38,17 @@ class TestGame:
     def test_create_game_ok(self, test_client):
         self.create_game_common(test_client)
 
+    def test_update_investigator_nonexist_game(self, test_client):
+        url = "/games/{}/investigator"
+        reqbody = {
+            "investigator": "doctor",
+            "player_id": "104",
+        }
+        response = test_client.patch(url.format("xxxxx"), headers={}, json=reqbody)
+        assert response.status_code == 404
+        error_detail = response.json()
+        assert error_detail["reason"] == GameErrorCodes.GAME_NOT_FOUND.value[0]
+
     def test_update_investigator_ok(self, test_client):
         game_id = self.create_game_common(test_client)
         url = "/games/{}/investigator"
@@ -61,6 +73,6 @@ class TestGame:
             "player_id": "9527",
         }
         response = test_client.patch(url.format(game_id), headers={}, json=reqbody)
-        assert response.status_code == 400
+        assert response.status_code == 409
         error_detail = response.json()
-        assert error_detail["reason"] == "investigator-already-chosen"
+        assert error_detail["reason"] == GameErrorCodes.INVESTIGATOR_CHOSEN.value[0]

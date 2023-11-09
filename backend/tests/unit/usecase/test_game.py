@@ -1,6 +1,6 @@
 import pytest
 from app.dto import PlayerDto, SingleInvestigatorDto, ListInvestigatorsDto
-from app.domain import Game, GameError
+from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 from app.adapter.repository import AbstractRepository
 from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
 
@@ -63,11 +63,10 @@ class TestCreateGame:
             PlayerDto(id="x8eu3L", nickname="Sheep"),
         ]
         uc = CreateGameUseCase(repository, settings)
-        try:
+        with pytest.raises(GameError) as e:
             resp = await uc.execute(data)  # noqa: F841
-            assert 0
-        except GameError as e:
-            assert e.args[0] == "incorrect-number-of-players"
+            assert e.func_code == GameFuncCodes.ADD_PLAYERS
+            assert e.error_code == GameErrorCodes.INCORECT_NUM_PLAYERS
 
     @pytest.mark.asyncio
     async def test_over_four_player(self):
@@ -81,11 +80,10 @@ class TestCreateGame:
             PlayerDto(id="oC9TNH", nickname="Alpaca"),
         ]
         uc = CreateGameUseCase(repository, settings)
-        try:
+        with pytest.raises(GameError) as e:
             resp = await uc.execute(data)  # noqa: F841
-            assert 0
-        except GameError as e:
-            assert e.args[0] == "incorrect-number-of-players"
+            assert e.func_code == GameFuncCodes.ADD_PLAYERS
+            assert e.error_code == GameErrorCodes.INCORECT_NUM_PLAYERS
 
 
 class TestGetAvailInvestigatorFromGame:

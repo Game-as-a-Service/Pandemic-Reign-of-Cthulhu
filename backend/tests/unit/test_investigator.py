@@ -1,5 +1,5 @@
 import pytest
-from app.domain import Game, GameError
+from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 from app.dto import PlayerDto, Investigator
 
 
@@ -15,27 +15,28 @@ def test_assign_valid(game):
 
 def test_assign_invalid(game):
     game.assign_character(Investigator.DETECTIVE)
-    err = game.assign_character(Investigator.DETECTIVE)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.DETECTIVE)
+        assert e.func_code == GameFuncCodes.ASSIGN_CHARACTER
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
 
 def test_assign_invalid2(game):
     game.assign_character(Investigator.DETECTIVE)
     game.assign_character(Investigator.HUNTER)
-    err = game.assign_character(Investigator.DETECTIVE)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.DETECTIVE)
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
-    err = game.assign_character(Investigator.HUNTER)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.HUNTER)
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
 
 def test_assign_not_exist(game):
-    err = game.assign_character("unknown")
-    assert isinstance(err, GameError)
-    assert err.args[0] == "invalid-investigator"
+    with pytest.raises(GameError) as e:
+        game.assign_character("unknown")
+        assert e.error_code == GameErrorCodes.INVALID_INVESTIGATOR
 
 
 # 用parametrize來設置不同的測試案例和期望結果
@@ -150,13 +151,13 @@ def test_filter_unselected(
                     "player_id": "8e1u3g",
                     "expect": Investigator.DRIVER,
                     "actual": None,
-                    "error": "investigator-already-chosen",
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
                 },
                 {
                     "player_id": "e1u30B",
                     "expect": Investigator.DRIVER,
                     "actual": Investigator.MAGICIAN,
-                    "error": "investigator-already-chosen",
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
                 },
                 {
                     "player_id": "e1u30B",
@@ -168,7 +169,7 @@ def test_filter_unselected(
                     "player_id": "x8eu3L",
                     "expect": Investigator.OCCULTIST,
                     "actual": Investigator.DRIVER,
-                    "error": "investigator-already-chosen",
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
                 },
             ]
         ),
@@ -184,13 +185,13 @@ def test_filter_unselected(
                     "player_id": "x8eu3L",
                     "expect": 12345,
                     "actual": Investigator.DRIVER,
-                    "error": "invalid-investigator",
+                    "error": GameErrorCodes.INVALID_INVESTIGATOR,
                 },
                 {
                     "player_id": "e1u30B",
                     "expect": 9999,
                     "actual": None,
-                    "error": "invalid-investigator",
+                    "error": GameErrorCodes.INVALID_INVESTIGATOR,
                 },
             ]
         ),
@@ -207,10 +208,11 @@ def test_switch_to_unselected(game, ut_data):
         assert p.get_investigator() is None
 
     for d in ut_data:
-        result = game.switch_character(d["player_id"], d["expect"])
-        if result:
-            assert result.args[0] == d["error"]
+        if d["error"]:
+            with pytest.raises(GameError) as e:
+                game.switch_character(d["player_id"], d["expect"])
+                assert e.value == d["error"]
         else:
-            assert result is d["error"]
+            game.switch_character(d["player_id"], d["expect"])
         player = game.get_player(d["player_id"])
         assert player.get_investigator() == d["actual"]

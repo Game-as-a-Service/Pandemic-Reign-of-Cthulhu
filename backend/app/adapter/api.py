@@ -17,6 +17,7 @@ from app.usecase import (
     GetAvailableInvestigatorsUseCase,
     SwitchInvestigatorUseCase,
 )
+from app.domain import GameError
 from app.adapter.repository import get_repository
 from app.adapter.presenter import read_investigator_presenter
 
@@ -32,6 +33,12 @@ _router = APIRouter(
 )
 
 shared_context = {}
+
+
+class GameErrorHTTPResponse(JSONResponse):
+    def __init__(self, e: GameError):
+        (app_err_code, h_status_code) = (e.error_code.value[0], e.error_code.value[1])
+        super().__init__(status_code=h_status_code, content={"reason": app_err_code})
 
 
 @_router.post("/games", response_model=CreateGameRespDto)
@@ -55,11 +62,12 @@ async def read_unselected_investigators(game_id: str):
 
 
 @_router.patch("/games/{game_id}/investigator", status_code=200)
-async def swtich_investigator(game_id: str, req: UpdateInvestigatorDto):
+async def switch_investigator(game_id: str, req: UpdateInvestigatorDto):
     uc = SwitchInvestigatorUseCase(shared_context["repository"])
-    error = await uc.execute(game_id, req.player_id, req.investigator)
-    if error:
-        return JSONResponse(status_code=400, content={"reason": error.args[0]})
+    try:
+        await uc.execute(game_id, req.player_id, req.investigator)
+    except GameError as e:
+        return GameErrorHTTPResponse(e)
 
 
 @asynccontextmanager
