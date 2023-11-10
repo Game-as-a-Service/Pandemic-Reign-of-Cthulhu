@@ -41,3 +41,8 @@ class SingleInvestigatorDto(BaseModel):
 
 
 ListInvestigatorsDto = RootModel[List[SingleInvestigatorDto]]
+
+
+class UpdateInvestigatorDto(BaseModel):
+    investigator: Investigator
+    player_id: str

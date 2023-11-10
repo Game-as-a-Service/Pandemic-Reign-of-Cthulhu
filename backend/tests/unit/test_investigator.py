@@ -1,5 +1,5 @@
 import pytest
-from app.domain import Game, GameError
+from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 from app.dto import PlayerDto, Investigator
 
 
@@ -15,27 +15,28 @@ def test_assign_valid(game):
 
 def test_assign_invalid(game):
     game.assign_character(Investigator.DETECTIVE)
-    err = game.assign_character(Investigator.DETECTIVE)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.DETECTIVE)
+        assert e.func_code == GameFuncCodes.ASSIGN_CHARACTER
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
 
 def test_assign_invalid2(game):
     game.assign_character(Investigator.DETECTIVE)
     game.assign_character(Investigator.HUNTER)
-    err = game.assign_character(Investigator.DETECTIVE)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.DETECTIVE)
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
-    err = game.assign_character(Investigator.HUNTER)
-    assert isinstance(err, GameError)
-    assert err.args[0] == "investigator-already-chosen"
+    with pytest.raises(GameError) as e:
+        game.assign_character(Investigator.HUNTER)
+        assert e.error_code == GameErrorCodes.INVESTIGATOR_CHOSEN
 
 
 def test_assign_not_exist(game):
-    err = game.assign_character("unknown")
-    assert isinstance(err, GameError)
-    assert err.args[0] == "invalid-investigator"
+    with pytest.raises(GameError) as e:
+        game.assign_character("unknown")
+        assert e.error_code == GameErrorCodes.INVALID_INVESTIGATOR
 
 
 # 用parametrize來設置不同的測試案例和期望結果
@@ -81,3 +82,137 @@ def test_filter_unselected(
         assert len(result) == expected_length
         for role in expected_not_in_results:
             assert role not in result
+
+
+@pytest.mark.parametrize(
+    "ut_data",
+    [
+        (
+            [
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.HUNTER,
+                    "actual": Investigator.HUNTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DETECTIVE,
+                    "actual": Investigator.DETECTIVE,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.HUNTER,
+                    "actual": Investigator.HUNTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.REPORTER,
+                    "actual": Investigator.REPORTER,
+                    "error": None,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.REPORTER,
+                    "actual": Investigator.REPORTER,
+                    "error": None,
+                },
+            ]
+        ),
+        (
+            [
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.MAGICIAN,
+                    "actual": Investigator.MAGICIAN,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "8e1u3g",
+                    "expect": Investigator.DRIVER,
+                    "actual": None,
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.MAGICIAN,
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": Investigator.OCCULTIST,
+                    "actual": Investigator.OCCULTIST,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.OCCULTIST,
+                    "actual": Investigator.DRIVER,
+                    "error": GameErrorCodes.INVESTIGATOR_CHOSEN,
+                },
+            ]
+        ),
+        (
+            [
+                {
+                    "player_id": "x8eu3L",
+                    "expect": Investigator.DRIVER,
+                    "actual": Investigator.DRIVER,
+                    "error": None,
+                },
+                {
+                    "player_id": "x8eu3L",
+                    "expect": 12345,
+                    "actual": Investigator.DRIVER,
+                    "error": GameErrorCodes.INVALID_INVESTIGATOR,
+                },
+                {
+                    "player_id": "e1u30B",
+                    "expect": 9999,
+                    "actual": None,
+                    "error": GameErrorCodes.INVALID_INVESTIGATOR,
+                },
+            ]
+        ),
+    ],
+)  # end of pytest parameter set
+def test_switch_to_unselected(game, ut_data):
+    setup_data = [
+        PlayerDto(id="x8eu3L", nickname="Sheep"),
+        PlayerDto(id="8e1u3g", nickname="Lamb"),
+        PlayerDto(id="e1u30B", nickname="Llama"),
+    ]
+    assert game.add_players(player_dtos=setup_data) is None
+    for p in game.players:
+        assert p.get_investigator() is None
+
+    for d in ut_data:
+        if d["error"]:
+            with pytest.raises(GameError) as e:
+                game.switch_character(d["player_id"], d["expect"])
+                assert e.value == d["error"]
+        else:
+            game.switch_character(d["player_id"], d["expect"])
+        player = game.get_player(d["player_id"])
+        assert player.get_investigator() == d["actual"]

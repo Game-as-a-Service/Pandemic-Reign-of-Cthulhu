@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, APIRouter, status as FastApiHTTPstatus
+from fastapi.responses import JSONResponse
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
 
@@ -9,8 +10,14 @@ from app.dto import (
     CreateGameReqDto,
     CreateGameRespDto,
     ListInvestigatorsDto,
+    UpdateInvestigatorDto,
 )
-from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
+from app.usecase import (
+    CreateGameUseCase,
+    GetAvailableInvestigatorsUseCase,
+    SwitchInvestigatorUseCase,
+)
+from app.domain import GameError
 from app.adapter.repository import get_repository
 from app.adapter.presenter import read_investigator_presenter
 
@@ -26,6 +33,12 @@ _router = APIRouter(
 )
 
 shared_context = {}
+
+
+class GameErrorHTTPResponse(JSONResponse):
+    def __init__(self, e: GameError):
+        (app_err_code, h_status_code) = (e.error_code.value[0], e.error_code.value[1])
+        super().__init__(status_code=h_status_code, content={"reason": app_err_code})
 
 
 @_router.post("/games", response_model=CreateGameRespDto)
@@ -46,6 +59,15 @@ async def read_unselected_investigators(game_id: str):
     uc = GetAvailableInvestigatorsUseCase(shared_context["repository"])
     result = await uc.execute(game_id, read_investigator_presenter)
     return result
+
+
+@_router.patch("/games/{game_id}/investigator", status_code=200)
+async def switch_investigator(game_id: str, req: UpdateInvestigatorDto):
+    uc = SwitchInvestigatorUseCase(shared_context["repository"])
+    try:
+        await uc.execute(game_id, req.player_id, req.investigator)
+    except GameError as e:
+        return GameErrorHTTPResponse(e)
 
 
 @asynccontextmanager
