@@ -1,19 +1,9 @@
-from enum import Enum, auto
+from enum import Enum
 from typing import List, Optional
 from uuid import uuid4
 
-from app.dto import PlayerDto, Investigator
+from app.dto import PlayerDto, Investigator, Difficulty
 from .player import Player
-
-
-class Difficulty(Enum):
-    # 教學難度
-    INTRODUCTORY = auto()
-    # 標準難度
-    STANDARD = auto()
-    # 專家難度
-    EXPERT = auto()
-
 
 class GameErrorCodes(Enum):
     """
@@ -34,6 +24,7 @@ class GameFuncCodes(Enum):
     ASSIGN_CHARACTER = 1002
     SWITCH_CHARACTER = 1003
     CLEAR_CHARACTER_SELECTION = 1004
+    UPDATE_DIFFICULTY = 1005
     USE_CASE_EXECUTE = 1099  ## TODO, rename this
 
 
@@ -143,3 +134,6 @@ class Game:
         invstgs = self._investigators
         unselected = [i_name for i_name, selected in invstgs.items() if not selected]
         return unselected[:num]
+
+    def update_difficulty(self, difficulty: Difficulty):
+        self._difficulty = difficulty

@@ -1,6 +1,6 @@
 import random
 from typing import List, Dict, Callable, Iterable
-from app.dto import PlayerDto, CreateGameRespDto, Investigator, ListInvestigatorsDto
+from app.dto import PlayerDto, CreateGameRespDto, Investigator, ListInvestigatorsDto, UpdateCommonRespDto, Difficulty
 from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 
 
@@ -60,3 +60,16 @@ class SwitchInvestigatorUseCase(AbstractUseCase):
 
         game.switch_character(player_id, new_invstg)
         await self.repository.save(game)
+
+class UpdateGameDifficultyUseCase(AbstractUseCase):
+    async def execute(self, game_id: str, level: Difficulty) -> UpdateCommonRespDto:
+        game = await self.repository.get_game(game_id)
+        if game is None:
+            raise GameError(
+                e_code=GameErrorCodes.GAME_NOT_FOUND,
+                fn_code=GameFuncCodes.USE_CASE_EXECUTE,
+            )
+        game.update_difficulty(level)
+        await self.repository.save(game)
+        message = "Update Game {} Difficulty Successfully".format(game.id)
+        return UpdateCommonRespDto(message=message)

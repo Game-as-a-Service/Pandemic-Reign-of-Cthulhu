@@ -46,3 +46,17 @@ ListInvestigatorsDto = RootModel[List[SingleInvestigatorDto]]
 class UpdateInvestigatorDto(BaseModel):
     investigator: Investigator
     player_id: str
+
+class Difficulty(Enum):
+    # 教學難度
+    INTRODUCTORY = "introductory"
+    # 標準難度
+    STANDARD = "standard"
+    # 專家難度
+    EXPERT = "expert"
+
+class UpdateDifficultyDto(BaseModel):
+    level: Difficulty
+
+class UpdateCommonRespDto(BaseModel):
+	message: str
