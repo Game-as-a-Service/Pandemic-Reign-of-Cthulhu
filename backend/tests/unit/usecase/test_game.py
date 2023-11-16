@@ -1,8 +1,8 @@
 import pytest
-from app.dto import PlayerDto, SingleInvestigatorDto, ListInvestigatorsDto
+from app.dto import PlayerDto, SingleInvestigatorDto, ListInvestigatorsDto, UpdateDifficultyDto
 from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 from app.adapter.repository import AbstractRepository
-from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase
+from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase, UpdateGameDifficultyUseCase
 
 
 class MockRepository(AbstractRepository):
@@ -101,3 +101,16 @@ class TestGetAvailInvestigatorFromGame:
 
         result = await uc.execute(mockgame.id, mock_presenter)  # noqa: F841
         assert len(result) == 2
+
+class TestUpdateGameDifficulty:
+    @pytest.mark.asyncio
+    async def test_ok(self):
+        mockgame = Game()
+        repository = MockRepository(mock_fetched=mockgame)
+        settings = {"host": "unit.test.app.com"}
+        data = UpdateDifficultyDto(level="standard")
+        uc = UpdateGameDifficultyUseCase(repository, settings)
+        resp = await uc.execute(mockgame.id, data.level)
+        assert resp.message is not None
+
+    

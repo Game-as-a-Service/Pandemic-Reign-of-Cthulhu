@@ -11,11 +11,14 @@ from app.dto import (
     CreateGameRespDto,
     ListInvestigatorsDto,
     UpdateInvestigatorDto,
+    UpdateDifficultyDto,
+    UpdateCommonRespDto
 )
 from app.usecase import (
     CreateGameUseCase,
     GetAvailableInvestigatorsUseCase,
     SwitchInvestigatorUseCase,
+    UpdateGameDifficultyUseCase
 )
 from app.domain import GameError
 from app.adapter.repository import get_repository
@@ -66,6 +69,18 @@ async def switch_investigator(game_id: str, req: UpdateInvestigatorDto):
     uc = SwitchInvestigatorUseCase(shared_context["repository"])
     try:
         await uc.execute(game_id, req.player_id, req.investigator)
+    except GameError as e:
+        return GameErrorHTTPResponse(e)
+
+
+@_router.patch("/games/{game_id}/difficulty", response_model=UpdateCommonRespDto)
+async def update_game_difficulty(game_id: str, req: UpdateDifficultyDto):
+    uc = UpdateGameDifficultyUseCase(
+        repository=shared_context["repository"], settings=shared_context["settings"]
+    )
+    try: 
+        response = await uc.execute(game_id, req.level)
+        return response
     except GameError as e:
         return GameErrorHTTPResponse(e)
 
