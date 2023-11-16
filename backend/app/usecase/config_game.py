@@ -1,6 +1,13 @@
 import random
 from typing import List, Dict, Callable, Iterable
-from app.dto import PlayerDto, CreateGameRespDto, Investigator, ListInvestigatorsDto, UpdateCommonRespDto, Difficulty
+from app.dto import (
+    PlayerDto,
+    CreateGameRespDto,
+    Investigator,
+    ListInvestigatorsDto,
+    UpdateCommonRespDto,
+    Difficulty,
+)
 from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 
 
@@ -11,7 +18,9 @@ class AbstractUseCase:
 
 
 class CreateGameUseCase(AbstractUseCase):
-    async def execute(self, data: List[PlayerDto]) -> CreateGameRespDto:
+    async def execute(
+        self, data: List[PlayerDto], presenter: Callable[[Dict, str], CreateGameRespDto]
+    ) -> CreateGameRespDto:
         game = Game()
         # Note this game backend interacts only with the Game Lobby
         # Platform in GaaS, the Lobby Platform backend is responsible
@@ -20,8 +29,7 @@ class CreateGameUseCase(AbstractUseCase):
         game.add_players(data)
         self.rand_select_investigator(game)
         await self.repository.save(game)
-        url = "https://{}/games/{}".format(self.settings["host"], game.id)
-        return CreateGameRespDto(url=url)
+        return presenter(self.settings, game.id)
 
     def rand_select_investigator(self, game: Game):
         options = list(Investigator)
@@ -60,6 +68,7 @@ class SwitchInvestigatorUseCase(AbstractUseCase):
 
         game.switch_character(player_id, new_invstg)
         await self.repository.save(game)
+
 
 class UpdateGameDifficultyUseCase(AbstractUseCase):
     async def execute(self, game_id: str, level: Difficulty) -> UpdateCommonRespDto:

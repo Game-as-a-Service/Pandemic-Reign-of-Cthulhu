@@ -76,13 +76,11 @@ class TestGame:
         assert response.status_code == 409
         error_detail = response.json()
         assert error_detail["reason"] == GameErrorCodes.INVESTIGATOR_CHOSEN.value[0]
-    
+
     def test_update_game_difficulty_ok(self, test_client):
         game_id = self.create_game_common(test_client)
         url = "/games/{}/difficulty"
-        reqbody = {
-            "level": "standard"
-        }
+        reqbody = {"level": "standard"}
         response = test_client.patch(url.format(game_id), headers={}, json=reqbody)
         assert response.status_code == 200
         respbody = response.json()
@@ -91,9 +89,7 @@ class TestGame:
 
     def test_update_game_difficulty_nonexist_game(self, test_client):
         url = "/games/{}/difficulty"
-        reqbody = {
-            "level": "standard"
-        }
+        reqbody = {"level": "standard"}
         response = test_client.patch(url.format("xxxxx"), headers={}, json=reqbody)
         assert response.status_code == 404
         error_detail = response.json()

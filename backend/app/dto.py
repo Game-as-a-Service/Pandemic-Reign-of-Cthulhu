@@ -47,6 +47,7 @@ class UpdateInvestigatorDto(BaseModel):
     investigator: Investigator
     player_id: str
 
+
 class Difficulty(Enum):
     # 教學難度
     INTRODUCTORY = "introductory"
@@ -55,8 +56,10 @@ class Difficulty(Enum):
     # 專家難度
     EXPERT = "expert"
 
+
 class UpdateDifficultyDto(BaseModel):
     level: Difficulty
 
+
 class UpdateCommonRespDto(BaseModel):
-	message: str
+    message: str
