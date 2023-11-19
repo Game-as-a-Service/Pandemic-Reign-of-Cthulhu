@@ -67,14 +67,14 @@ jobs:
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      - name: Lint
+        run: |
+          cd frontend
+          ${{ steps.detect-package-manager.outputs.runner }} next lint
       - name: Build with Next.js
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.runner }} next build
-      - name: Static HTML export with Next.js
-        run: |
-          cd frontend
-          ${{ steps.detect-package-manager.outputs.runner }} next export
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
