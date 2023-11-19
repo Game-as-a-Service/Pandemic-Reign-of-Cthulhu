@@ -1,8 +1,18 @@
 import pytest
-from app.dto import PlayerDto, SingleInvestigatorDto, ListInvestigatorsDto, UpdateDifficultyDto
+from app.dto import (
+    PlayerDto,
+    SingleInvestigatorDto,
+    ListInvestigatorsDto,
+    UpdateDifficultyDto,
+)
 from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 from app.adapter.repository import AbstractRepository
-from app.usecase import CreateGameUseCase, GetAvailableInvestigatorsUseCase, UpdateGameDifficultyUseCase
+from app.adapter.presenter import create_game_presenter
+from app.usecase import (
+    CreateGameUseCase,
+    GetAvailableInvestigatorsUseCase,
+    UpdateGameDifficultyUseCase,
+)
 
 
 class MockRepository(AbstractRepository):
@@ -37,8 +47,9 @@ class TestCreateGame:
             PlayerDto(id="R0fj1B", nickname="Goat"),
         ]
         uc = CreateGameUseCase(repository, settings)
-        resp = await uc.execute(data)
+        resp = await uc.execute(data, create_game_presenter)
         assert resp.url is not None
+        assert len(resp.url) > 0
 
     @pytest.mark.asyncio
     async def test_repo_error(self):
@@ -50,7 +61,7 @@ class TestCreateGame:
         ]
         uc = CreateGameUseCase(repository, settings)
         try:
-            resp = await uc.execute(data)  # noqa: F841
+            resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert 0
         except UnitTestError as e:
             assert e.args[0] == "unit-test"
@@ -64,7 +75,7 @@ class TestCreateGame:
         ]
         uc = CreateGameUseCase(repository, settings)
         with pytest.raises(GameError) as e:
-            resp = await uc.execute(data)  # noqa: F841
+            resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert e.func_code == GameFuncCodes.ADD_PLAYERS
             assert e.error_code == GameErrorCodes.INCORECT_NUM_PLAYERS
 
@@ -81,7 +92,7 @@ class TestCreateGame:
         ]
         uc = CreateGameUseCase(repository, settings)
         with pytest.raises(GameError) as e:
-            resp = await uc.execute(data)  # noqa: F841
+            resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert e.func_code == GameFuncCodes.ADD_PLAYERS
             assert e.error_code == GameErrorCodes.INCORECT_NUM_PLAYERS
 
@@ -102,6 +113,7 @@ class TestGetAvailInvestigatorFromGame:
         result = await uc.execute(mockgame.id, mock_presenter)  # noqa: F841
         assert len(result) == 2
 
+
 class TestUpdateGameDifficulty:
     @pytest.mark.asyncio
     async def test_ok(self):
@@ -112,5 +124,3 @@ class TestUpdateGameDifficulty:
         uc = UpdateGameDifficultyUseCase(repository, settings)
         resp = await uc.execute(mockgame.id, data.level)
         assert resp.message is not None
-
-    

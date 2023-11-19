@@ -12,17 +12,17 @@ from app.dto import (
     ListInvestigatorsDto,
     UpdateInvestigatorDto,
     UpdateDifficultyDto,
-    UpdateCommonRespDto
+    UpdateCommonRespDto,
 )
 from app.usecase import (
     CreateGameUseCase,
     GetAvailableInvestigatorsUseCase,
     SwitchInvestigatorUseCase,
-    UpdateGameDifficultyUseCase
+    UpdateGameDifficultyUseCase,
 )
 from app.domain import GameError
 from app.adapter.repository import get_repository
-from app.adapter.presenter import read_investigator_presenter
+from app.adapter.presenter import read_investigator_presenter, create_game_presenter
 
 _router = APIRouter(
     prefix="",  # could be API versioning e.g. /v0.0.1/* ,  /v2.0.1/*
@@ -49,7 +49,7 @@ async def create_game(req: CreateGameReqDto):
     uc = CreateGameUseCase(
         repository=shared_context["repository"], settings=shared_context["settings"]
     )
-    response = await uc.execute(req.players)
+    response = await uc.execute(req.players, create_game_presenter)
     return response
 
 
@@ -78,7 +78,7 @@ async def update_game_difficulty(game_id: str, req: UpdateDifficultyDto):
     uc = UpdateGameDifficultyUseCase(
         repository=shared_context["repository"], settings=shared_context["settings"]
     )
-    try: 
+    try:
         response = await uc.execute(game_id, req.level)
         return response
     except GameError as e:

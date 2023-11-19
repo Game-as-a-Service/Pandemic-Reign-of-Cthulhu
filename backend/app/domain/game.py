@@ -5,6 +5,7 @@ from uuid import uuid4
 from app.dto import PlayerDto, Investigator, Difficulty
 from .player import Player
 
+
 class GameErrorCodes(Enum):
     """
     Elements for each tuple
