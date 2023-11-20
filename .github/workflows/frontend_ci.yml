@@ -71,6 +71,7 @@ jobs:
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.manager }} install eslint typescript --save-dev
+          ${{ steps.detect-package-manager.outputs.manager }} install @typescript-eslint/parser @typescript-eslint/eslint-plugin --save-dev
           ${{ steps.detect-package-manager.outputs.runner }}  eslint --init
           ${{ steps.detect-package-manager.outputs.manager }}  run lint_exp
       - name: Build with Next.js
