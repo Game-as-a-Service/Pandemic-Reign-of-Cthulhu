@@ -67,13 +67,14 @@ jobs:
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      - name: Lint
+        run: |
+          cd frontend
+          ${{ steps.detect-package-manager.outputs.manager }} install eslint typescript --save-dev
+          ${{ steps.detect-package-manager.outputs.runner }}  eslint --init
+          eslint . --ext .js,.jsx,.ts,.tsx
       - name: Build with Next.js
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.runner }} next build
-      - name: Lint
-        run: |
-          cd frontend
-          eslint . --ext .js,.jsx,.ts,.tsx
-
 
