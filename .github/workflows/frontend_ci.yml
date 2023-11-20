@@ -74,6 +74,6 @@ jobs:
       - name: Lint
         run: |
           cd frontend
-          ${{ steps.detect-package-manager.outputs.runner }} next lint
+          eslint . --ext .js,.jsx,.ts,.tsx
 
 
