@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint_exp": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint_exp": "eslint ./**/* --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
