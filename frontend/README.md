@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pandemic Reign of Cthulhu
+
+This is the frontend repo of pandemic reign of cthulhu,
+written in next.js 13
+
+## Project Structure
+In next.js 13, pages are put under /app.
+- the app dir root layout is required
+- each route is defined by
+- - nested folder under app
+- - page.js to make the route publicly accessible
+
+- assets
+- - here puts the assets use in the frontend game app
+- - categorized by type (e.g. investigator, clue-card, etc)
+
+- components
+- - common components that are used in the app
+- - including investigator card, clue card, the old ones card, etc
+
+- modules (if needed)
+- - put the module used only for a certain page in here
+
+- shared
+- - put the commonly used constants, type, interface here
+- - can also consider putting common state management here (e.g. jotai)
 
 ## Getting Started
 
-First, run the development server:
+### How to run the app in local
+Example of environment variables will be put as env-file in the directory.
+If such file exists, please ensure that the environment variables are set up first before use.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. install dependencies
+```npm run install```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. run development server
+```npm run dev```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app should be running on http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+/design serves as a design system page for components reference
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+### How to fix lint
+``` npm run lint ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### How to build
+``` npm run build```
