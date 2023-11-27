@@ -7,6 +7,7 @@ type Investigator =
   | "occultist"
   | "reporter";
 type Sanity = "sane" | "insane";
+type City = 'Arkham' | 'Dunwich' | 'Kingsport' | 'Innsmouth';
 
 interface InvestigatorData {
   name: Investigator;
@@ -14,3 +15,4 @@ interface InvestigatorData {
   insaneImage: string;
   sanity: Sanity;
 }
+
