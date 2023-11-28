@@ -70,7 +70,7 @@ jobs:
       - name: Lint
         run: |
           cd frontend
-          ${{ steps.detect-package-manager.outputs.manager }}  run lint
+          ${{ steps.detect-package-manager.outputs.manager }}  run lint_exp
       - name: Build with Next.js
         run: |
           cd frontend
