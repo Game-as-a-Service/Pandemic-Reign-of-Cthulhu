@@ -13,7 +13,7 @@ export const InvestigatorCard = ({ investigator, sane }: Props) => {
   const sanity = sane ? "sane" : "insane";
   const image = useMemo(() => {
     return INVESTIGATOR_IMAGE_MAPPING[`${investigator}-${sanity}`];
-  }, [investigator, sane]);
+  }, [investigator, sanity]);
 
   const sanitySign = useMemo(() => { return SANITY_SIGN_MAPPING[sanity] }, [sanity]);
 
