@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --fix --debug",
-    "lint_exp": "eslint app/ --ext .js,.jsx,.ts,.tsx"
+    "lint": "next lint --fix",
+    "lint_exp": "eslint app/ --ext .js,.jsx,.ts,.tsx  --debug"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
