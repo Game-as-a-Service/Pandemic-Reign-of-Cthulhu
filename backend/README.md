@@ -1,15 +1,30 @@
-### Settings
-#### Install dependencies
+# Pandemic - Reign of Cthulhu
+The codebase here includes the backend server of the game
+
+## Technology Stack
+- Python v3.12.0
+- [Poetry](https://github.com/python-poetry/poetry) v1.6.1 for package management
+- [Socket.io](https://socket.io/) for real-time communication among clients and server
+- [Ruff](https://github.com/astral-sh/ruff) for linting
+- [Black](https://github.com/psf/black) for code formatting
+
+Check out all other dependencies required by running the command below :
+```bash
+poetry run pip list
+```
+
+
+## Setup
+### Install dependencies
 ```bash
 poetry  update
 ```
 
-#### Build project
+### Build project
 ```bash
 poetry  build
 poetry  install
 ```
-
 
 ### Run
 ```bash
@@ -28,6 +43,7 @@ curl  --request POST --http2 \
 ```
 
 ### Test
+The command below includes unit test and e2e test
 ```bash
 poetry run pytest -v ./tests
 ```
@@ -41,4 +57,3 @@ poetry run ruff check ./app/
 ```bash
 poetry run black  ./app/
 ```
-
