@@ -1,7 +1,6 @@
-# Pandemic - Reign of Cthulhu
-Battle eldritch horrors with your allies to avert cosmic chaos in the pandemic - reign of Cthulhu
-
 <img src="./doc/img/board-game-pandemic-cthulhu.png" width=385 height=296>
+
+Battle eldritch horrors with your allies to avert cosmic chaos in the pandemic - reign of Cthulhu
 
 ## Overview
 This is an interactive web game that brings the board game with the same title to digital implementation in TypeScript and Python.
