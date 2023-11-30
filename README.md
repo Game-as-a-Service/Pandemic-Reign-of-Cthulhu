@@ -21,7 +21,7 @@ See [REST API documentation](https://game-as-a-service.github.io/Pandemic-Reign-
 
 
 ## License
-(TODO)
+GPL 3.0
 
 ## Contribution
 ### Follow the software engineering / development practices
@@ -35,20 +35,31 @@ Core maintainers initiated this game project with a strong emphasis on practicin
   - [Test Driven Development Tutorial For Beginners](https://youtu.be/yfP_v6qCdcs?si=vVRI1yhbuqKkMCkJ)
   - [Explain Acceptance Test-Driven Development](https://softwareengineering.stackexchange.com/a/33263/346703)
 - [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow)
-  - keep each of your development branch small and manageable, and avoid messing up the `main` branch
 
 ### Always test your code changes
 If you are adding or modifying application-specific logic to the game, be sure to run test cases and linter for syntax check before submitting your code.
 
 ### Discussion before making any change
 Contributors are always encouraged to interact with the maintainers of this codebase, by starting a discussion in following places
-- [GitHub Issue](https://github.com/Game-as-a-Service/Pandemic-Reign-of-Cthulhu/issues) , for features, refactor, bugfix, and build script in this game.
-- [GitHub Discussion](https://github.com/Game-as-a-Service/Pandemic-Reign-of-Cthulhu/discussions) , for architecture/design discussion, minor changes like typo/error in the code and documentation, or questions about any technology / tool applied to the game.
+- [GitHub Issue](https://github.com/Game-as-a-Service/Pandemic-Reign-of-Cthulhu/issues) , for features, refactor, bugfix, build script, and minor changes like typo/error in the code and documentation.
+- [GitHub Discussion](https://github.com/Game-as-a-Service/Pandemic-Reign-of-Cthulhu/discussions) , for architecture/design discussion, or questions about any technology / tool / 3rd-party library applied to the game.
 
 ### Following the naming convention
 - [Git commit message format](https://github.com/Game-as-a-Service/Pandemic-Reign-of-Cthulhu/discussions/7)
 - [Git branch naming convention](https://dev.to/varbsan/a-simplified-convention-for-naming-branches-and-commits-in-git-il4)
 
+### Work with your development branch
+After discussion, what you can do is to
+- create your development branch, with the naming convention described above
+- push commits / the code change to the branch
+- create a PR (pull request) if you are ready to merge your development branch into the main branch, there will be core maintainer(s) coming / reviewing your code change.
+
+Remember to keep code change in your development branch small and manageable, to make reviewers' life easier ;)
+
 ### Styling
 Always run the linter in frontend / backend development environment, to ensure you code adheres to the required style.
 
+## Reference
+- Previous discussion on [Miro](https://miro.com/app/board/uXjVMO8BrcQ=) (Chinese only)
+- Graphical Design and material on [Fimga](https://www.figma.com/file/MfUa9gGZLUq2xB5QXA6KFJ/%E7%98%9F%E7%96%AB%E5%8D%B1%E6%A9%9F---%E5%85%8B%E8%98%87%E9%AD%AF%E7%9A%84%E6%94%AF%E9%85%8D?type=design&node-id=0-1&mode=design)
+- Previous project management page on [Notion](https://www.notion.so/6c32aaca13714324942d5ea81e1e80c5) (outdated)
