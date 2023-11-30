@@ -1,4 +1,5 @@
-# Pandemic Reign-of-Cthulhu 
+# Pandemic - Reign of Cthulhu 
+
 <img src="./doc/img/board-game-pandemic-cthulhu.png" width=405 height=296 class="center">
 
 Battle eldritch horrors with your allies to avert cosmic chaos in the pandemic - reign of Cthulhu
