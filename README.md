@@ -4,13 +4,15 @@ Battle eldritch horrors with your allies to avert cosmic chaos in the pandemic -
 <img src="./doc/img/board-game-pandemic-cthulhu.png" width=385 height=296>
 
 ## Overview
- 
-|<img src="./doc/img/GaaS-pandemic-frontend-map-sample.png" width=430 height=310> | <img src="./doc/img/GaaS-pandemic-card-occultist.png"> |  <img src="./doc/img/GaaS-pandemic-card-place-wharf.png"> |
-|-|-|-| 
-
 This is an interactive web game that brings the board game with the same title to digital implementation in TypeScript and Python.
 
-To understand the rule of the game, see [the manual at here](https://www.zmangames.com/en/products/pandemic-reign-cthulhu/)
+To understand the rule of the game, see [the manual at here](https://www.zmangames.com/en/products/pandemic-reign-cthulhu/) 
+
+The screenshot below shows current map, cards in the frontend application
+
+|<img src="./doc/img/GaaS-pandemic-frontend-map-sample.png" width=430 height=310> | <img src="./doc/img/GaaS-pandemic-card-occultist.png"> |  <img src="./doc/img/GaaS-pandemic-card-place-wharf.png" height=310> |
+|-|-|-| 
+
 
 ## Setup
 See the documentation below to build both of the client and server applications
