@@ -29,10 +29,10 @@ jobs:
     - name: Run linter by ruff
       run: |
         cd backend
-        poetry run socketio-app-dev &
         poetry run ruff check -v app
-        kill -s sigterm $(cat ./pid.log)
     - name: Run test by pytest
       run: |
         cd backend
+        poetry run socketio-app-dev &
         poetry run pytest -v tests
+        kill -s sigterm $(cat ./pid.log)
