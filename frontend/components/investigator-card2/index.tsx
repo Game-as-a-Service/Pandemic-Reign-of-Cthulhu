@@ -45,6 +45,7 @@ const InvestigatorCard = React.memo(function ({
     <Card
       className={cn(
         "rounded-2xl w-60 min-h-[250px] border-0 bg-gradient-to-r shadow-lg cursor-pointer transition-all",
+        "hover:scale-95 active:scale-95",
         gradientStyle[sanity],
         isSelected ? "grayscale" : "grayscale-0"
       )}
