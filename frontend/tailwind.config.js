@@ -91,6 +91,9 @@ module.exports = {
       backgroundImage: {
         map: "url('/img/background.webp')",
       },
+      boxShadow: {
+        custom: "4px 4px 16px 0px rgba(0, 0, 0, 0.25)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
