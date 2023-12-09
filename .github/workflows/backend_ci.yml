@@ -2,7 +2,7 @@ name: Python Package build test
 
 on: 
   push:
-    branches: ["main", "experiment/backend/socketio"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
