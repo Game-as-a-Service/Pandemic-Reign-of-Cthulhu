@@ -1,62 +1,104 @@
 import logging
 import asyncio
 import os
-
 from typing import Dict
+
 import socketio
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
+from pydantic import BaseModel, ConfigDict, ValidationError
 
-toplvl_namespace = "/game"
+from app.constant import RealTimeCommConst as RtcConst
+from app.config import RTC_HOST, RTC_PORT, LOG_FILE_PATH
+
 srv = socketio.AsyncServer(async_mode="asgi")
+# currently the logger is configured in simple way, if someone needs to run it
+# in production environment, maybe they can switch to more advanced architecture
+# e.g. centralized logging architecture, ELK stack, EFK stack ...etc
 _logger = logging.getLogger(__name__)
+_logger.setLevel(logging.WARNING)
+_logger.addHandler(logging.FileHandler(LOG_FILE_PATH["RTC"], mode="a"))
 
 
-@srv.on("chat", namespace=toplvl_namespace)
+class ChatMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    msg: str
+    nickname: str
+    gameID: str
+    client: str  ## client session ID
+
+
+class RtcInitMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    nickname: str
+    gameID: str
+    client: str
+
+
+@srv.on(RtcConst.EVENTS.CHAT.value, namespace=RtcConst.NAMESPACE)
 async def _forward_chat_msg(sid, data: Dict):
-    required = ["msg", "nickname", "gameID"]
-
-    def field_check(name) -> tuple:
-        return (name, data.get(name, None))
-
-    def field_filter(item) -> bool:
-        return item[1] is None
-
-    not_exist = filter(field_filter, map(field_check, required))
-    not_exist = list(not_exist)
-    if len(not_exist) == 0:
+    try:
+        ChatMsgData(**data)
         await srv.emit(
-            "chat", data, namespace=toplvl_namespace, room=data["gameID"], skip_sid=sid
+            RtcConst.EVENTS.CHAT.value,
+            data,
+            namespace=RtcConst.NAMESPACE,
+            room=data["gameID"],
+            skip_sid=sid,
         )
-    else:
-
-        def extract_field(item) -> str:
-            return item[0]
-
-        error = {"missing_fields": list(map(extract_field, not_exist))}
-        await srv.emit("chat", data=error, namespace=toplvl_namespace, to=sid)
+    except ValidationError as e:
+        error = e.errors(include_url=False, include_input=False)
+        await srv.emit(
+            RtcConst.EVENTS.CHAT.value, data=error, namespace=RtcConst.NAMESPACE, to=sid
+        )
 
 
-@srv.on("init", namespace=toplvl_namespace)
+@srv.on(RtcConst.EVENTS.INIT.value, namespace=RtcConst.NAMESPACE)
 async def init_communication(sid, data: Dict):
     try:
-        await srv.enter_room(sid, room=data["room"], namespace=toplvl_namespace)
+        RtcInitMsgData(**data)
+        await srv.enter_room(sid, room=data["gameID"], namespace=RtcConst.NAMESPACE)
         data["succeed"] = True
-    except (ValueError, KeyError) as e:
+        await srv.emit(
+            RtcConst.EVENTS.INIT.value,
+            data,
+            namespace=RtcConst.NAMESPACE,
+            room=data["gameID"],
+        )
+    except ValidationError as e:
         _logger.error("%s", e)
-        data["succeed"] = False
-    await srv.emit("init", data, namespace=toplvl_namespace, room=data["room"])
+        error = e.errors(include_url=False, include_input=False)
+        error["succeed"] = False
+        await srv.emit(
+            RtcConst.EVENTS.INIT.value,
+            namespace=RtcConst.NAMESPACE,
+            data=error,
+            to=sid,
+        )
 
 
-@srv.on("deinit", namespace=toplvl_namespace)
+@srv.on(RtcConst.EVENTS.DEINIT.value, namespace=RtcConst.NAMESPACE)
 async def deinit_communication(sid, data: Dict):
     try:
-        await srv.leave_room(sid, room=data["room"], namespace=toplvl_namespace)
+        RtcInitMsgData(**data)
+        await srv.leave_room(sid, room=data["gameID"], namespace=RtcConst.NAMESPACE)
         data["succeed"] = True
-    except KeyError as e:
+        await srv.emit(
+            RtcConst.EVENTS.DEINIT.value,
+            data,
+            namespace=RtcConst.NAMESPACE,
+            room=data["gameID"],
+        )
+    except ValidationError as e:
         _logger.error("%s", e)
+        error = e.errors(include_url=False, include_input=False)
         data["succeed"] = False
-    await srv.emit("deinit", data, namespace=toplvl_namespace, room=data["room"])
+        await srv.emit(
+            RtcConst.EVENTS.DEINIT.value,
+            namespace=RtcConst.NAMESPACE,
+            data=error,
+            to=sid,
+        )
 
 
 def gen_srv_task(host: str):
@@ -70,4 +112,5 @@ def entry() -> None:
     with open("pid.log", "w") as f:
         pid = os.getpid()
         f.write(str(pid))
-    asyncio.run(gen_srv_task("localhost:8082"))
+    url = "%s:%s" % (RTC_HOST, RTC_PORT)
+    asyncio.run(gen_srv_task(url))

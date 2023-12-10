@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 
+from app.config import REST_HOST, REST_PORT
 from app.adapter.api import init_app_server
 from app.domain import GameErrorCodes
 
@@ -9,7 +10,7 @@ from app.domain import GameErrorCodes
 def test_client():
     with TestClient(
         app=init_app_server(),
-        base_url="http://localhost:8081",
+        base_url="http://%s:%s" % (REST_HOST, REST_PORT),
         raise_server_exceptions=True,
     ) as _client:
         yield _client

@@ -3,11 +3,14 @@ from typing import List, Dict
 import pytest
 import socketio
 
-SERVER_URL = "http://localhost:8082"
+from app.config import RTC_HOST, RTC_PORT
+from app.constant import RealTimeCommConst as RtcConst
+
+SERVER_URL = "http://%s:%s" % (RTC_HOST, RTC_PORT)
 
 
 class MockClient:
-    def __init__(self, nickname: str, toplvl_namespace="/game"):
+    def __init__(self, nickname: str, toplvl_namespace=RtcConst.NAMESPACE):
         self._sio_client = socketio.AsyncSimpleClient(logger=False)
         self._toplvl_namespace = toplvl_namespace
         self._nickname = nickname
@@ -33,19 +36,29 @@ class MockClient:
 
     async def join(self, room_id: str):
         await self._sio_client.emit(
-            "init", data={"client": self._sio_client.sid, "room": room_id}
+            RtcConst.EVENTS.INIT.value,
+            data={
+                "nickname": self._nickname,
+                "client": self._sio_client.sid,
+                "gameID": room_id,
+            },
         )
 
     async def leave(self, room_id: str):
         await self._sio_client.emit(
-            "deinit", data={"client": self._sio_client.sid, "room": room_id}
+            RtcConst.EVENTS.DEINIT.value,
+            data={
+                "nickname": self._nickname,
+                "client": self._sio_client.sid,
+                "gameID": room_id,
+            },
         )
 
     async def chat(self, room_id: str, msg: str):
         item = {"nickname": self._nickname, "msg": msg}
         data = {"client": self._sio_client.sid, "gameID": room_id}
         data.update(item)
-        await self._sio_client.emit("chat", data=data)
+        await self._sio_client.emit(RtcConst.EVENTS.CHAT.value, data=data)
         self._msg_log.append(item)
 
     async def verify_join(self, expect_clients: List):
@@ -54,7 +67,7 @@ class MockClient:
         for expect_sid in expect_client_sid:
             evts = await self._sio_client.receive(timeout=1)
             assert len(evts) == 2
-            assert evts[0] == "init"
+            assert evts[0] == RtcConst.EVENTS.INIT.value
             assert evts[1]["succeed"]
             actual_client_sid.append(evts[1]["client"])
         assert set(actual_client_sid) == set(expect_client_sid)
@@ -62,7 +75,7 @@ class MockClient:
     async def verify_chat(self, expect_sender, expect_error: Dict = None):
         evts: List = await self._sio_client.receive(timeout=3)
         assert len(evts) == 2
-        assert evts[0] == "chat"
+        assert evts[0] == RtcConst.EVENTS.CHAT.value
         if expect_error:
             assert evts[1] == expect_error
             self.messages_log.pop()
@@ -115,7 +128,14 @@ class TestRealTimeComm:
 
         await clients[0].chat(room_id="a001", msg=None)
         await clients[0].verify_chat(
-            clients[0], expect_error={"missing_fields": ["msg"]}
+            clients[0],
+            expect_error=[
+                {
+                    "type": "string_type",
+                    "loc": ["msg"],
+                    "msg": "Input should be a valid string",
+                }
+            ],
         )
 
         await clients[1].verify_chat(clients[0])
