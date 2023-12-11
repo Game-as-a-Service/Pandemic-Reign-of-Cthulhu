@@ -33,4 +33,7 @@ jobs:
     - name: Run test by pytest
       run: |
         cd backend
+        mkdir -p log/dev
+        poetry run socketio-app-dev &
         poetry run pytest -v tests
+        kill -s sigterm $(cat ./pid.log)

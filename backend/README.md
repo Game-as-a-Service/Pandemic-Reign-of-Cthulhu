@@ -27,8 +27,13 @@ poetry  install
 ```
 
 ### Run
+#### web application server for REST endpoints
 ```bash
 poetry run webapp-dev
+```
+#### socket.io server
+```bash
+poetry run socketio-app-dev
 ```
 
 Once the server started, you can send HTTP request to the server.

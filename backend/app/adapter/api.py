@@ -1,10 +1,12 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, APIRouter, status as FastApiHTTPstatus
 from fastapi.responses import JSONResponse
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
+from app.config import LOG_FILE_PATH
 
 from app.dto import (
     CreateGameReqDto,
@@ -20,9 +22,14 @@ from app.usecase import (
     SwitchInvestigatorUseCase,
     UpdateGameDifficultyUseCase,
 )
+from app.config import REST_HOST, REST_PORT
 from app.domain import GameError
 from app.adapter.repository import get_repository
 from app.adapter.presenter import read_investigator_presenter, create_game_presenter
+
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.WARNING)
+_logger.addHandler(logging.FileHandler(LOG_FILE_PATH["REST"], mode="a"))
 
 _router = APIRouter(
     prefix="",  # could be API versioning e.g. /v0.0.1/* ,  /v2.0.1/*
@@ -106,6 +113,6 @@ def init_app_server() -> FastAPI:
 def start_web_app() -> None:
     # TODO, parameterize with separate python module or `toml` file
     cfg = Config()
-    cfg.bind = ["localhost:8081"]
+    cfg.bind = ["%s:%s" % (REST_HOST, REST_PORT)]
     app = init_app_server()
     asyncio.run(serve(app, cfg))
