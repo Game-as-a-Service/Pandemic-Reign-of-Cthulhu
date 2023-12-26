@@ -3,9 +3,9 @@ import { investigators } from "@/config/investigators";
 
 export default function RolePickingDemo() {
   return (
-    <main className="min-h-full py-4 bg-cover bg-map">
+    <main className="min-h-full py-8 bg-cover bg-map">
       <div className="container">
-        <h1 className="font-bold leading-tight text-center text-outline-4 tracking-[4px] text-7xl xl:text-8xl text-yellow">
+        <h1 className="font-bold leading-tight text-center text-outline-4 tracking-[4px] text-5xl xl:text-6xl 2xl:text-7xl text-yellow">
           Please Select a Character
           {/* <span className="block leading-tight tracking-[20px]">請選擇角色</span> */}
         </h1>

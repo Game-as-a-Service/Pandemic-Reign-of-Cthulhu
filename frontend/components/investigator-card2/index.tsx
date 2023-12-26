@@ -71,7 +71,7 @@ const InvestigatorCard = React.memo(function ({
         </div>
       </CardHeader>
       <CardFooter className="w-full gap-3 justify-center align-center relative py-2 px-4 min-h-[45px]">
-        <CardTitle className="text-2xl text-white capitalize font-display">
+        <CardTitle className="text-2xl tracking-wider text-white capitalize font-display">
           {investigator}
         </CardTitle>
         <div className="absolute right-1 bottom-1">
