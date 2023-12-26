@@ -7,14 +7,14 @@ export default function LevelSelectDemo() {
       <div className="container">
         <h1 className="text-5xl font-bold leading-tight text-center text-outline-4 xl:text-6xl 2xl:text-7xl text-yellow tracking-[4px]">
           Please Select the Level of Difficulty
-          <span className="block leading-tight tracking-[20px]">請選擇難度</span>
+          {/* <span className="block leading-tight tracking-[20px]">請選擇難度</span> */}
         </h1>
         <div className="grid grid-rows-3 gap-16 pt-16 justify-items-center">
           {levels.map((level) => {
             return (
-              <Button key={level.en} variant="gradient" className="w-full h-36 xl:h-48 2xl:h-56">
+              <Button key={level.label} variant="gradient" className="w-full h-36 xl:h-48 2xl:h-56">
                 <span className="text-white font-bold tracking-[2px] text-outline-2 text-5xl xl:text-6xl 2xl:text-7xl">
-                  {`${level.en} ${level.zh}`}
+                  {level.label}
                 </span>
               </Button>
             );

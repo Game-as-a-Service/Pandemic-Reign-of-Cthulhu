@@ -1,14 +1,14 @@
 export const levels = [
   {
-    en: "Introductory",
-    zh: "教學",
+    label: "Introductory",
+    value: "intro",
   },
   {
-    en: "Standard",
-    zh: "基礎",
+    label: "Standard",
+    value: "standard",
   },
   {
-    en: "Expert",
-    zh: "專家",
+    label: "Expert",
+    value: "expert",
   },
 ];
