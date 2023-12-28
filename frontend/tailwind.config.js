@@ -1,14 +1,14 @@
-import { fontFamily } from 'tailwindcss/defaultTheme'
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
     container: {
       center: true,
@@ -19,7 +19,7 @@ module.exports = {
     },
     fontFamily: {
       sans: ["var(--font-sans)", ...fontFamily.sans],
-      display: ["var(--font-display)", ...fontFamily.sans]
+      display: ["var(--font-display)", ...fontFamily.sans],
     },
     extend: {
       colors: {
@@ -30,7 +30,7 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "#6D9773",
-          foreground:  "#6D9773",
+          foreground: "#6D9773",
         },
         secondary: {
           DEFAULT: "#0C3B2E",
@@ -88,7 +88,16 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      backgroundImage: {
+        map: "url('/img/background.webp')",
+      },
+      boxShadow: {
+        custom: "4px 4px 16px 0px rgba(0, 0, 0, 0.25)",
+      },
+      scale: {
+        99: "99%",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};
