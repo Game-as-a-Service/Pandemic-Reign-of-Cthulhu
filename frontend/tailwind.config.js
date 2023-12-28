@@ -29,27 +29,30 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#6D9773",
-          foreground: "#6D9773",
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: "#0C3B2E",
+          DEFAULT: 'hsl(var(--secondary))',
           foreground: "#0C3B2E",
         },
         tertiary: {
-          DEFAULT: "#BB8A52",
+          DEFAULT: "hsl(var(--tertiary))",
           foreground: "#BB8A52",
         },
         yellow: {
-          DEFAULT: "#FFBA00",
+          DEFAULT: 'hsl(var(--yellow))',
           foreground: "#FFBA00",
         },
+        green: {
+          DEFAULT: 'hsl(var(--green))',
+        },
         brown: {
-          DEFAULT: "#77542A",
+          DEFAULT: 'hsl(var(--brown))',
           foreground: "#77542A",
         },
         destructive: {
-          DEFAULT: "#F32C22",
+          DEFAULT: 'hsl(var(--destructive))',
           foreground: "#F32C22",
         },
         muted: {

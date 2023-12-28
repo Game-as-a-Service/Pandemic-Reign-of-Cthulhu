@@ -13,11 +13,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 129 17% 51%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 163 66% 14%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --tertiary: 32 44% 53%;
+
+    --yellow: 44 100% 50%;
+    --green: 155 51% 34%;
+    --brown: 33 48% 32%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -25,7 +31,7 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 3 90% 54%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
@@ -73,38 +79,16 @@
   body {
     @apply bg-background text-foreground;
   }
-  html,
-  body {
-    height: 100%;
-  }
 }
 
-@layer utilities {
-  .text-outline-2 {
-    text-shadow: -2px -2px 0 #000, -2px -1px 0 #000, -2px 0px 0 #000, -2px 1px 0 #000,
-      -2px 2px 0 #000, -1px -2px 0 #000, -1px -1px 0 #000, -1px 0px 0 #000, -1px 1px 0 #000,
-      -1px 2px 0 #000, 0px -2px 0 #000, 0px -1px 0 #000, 0px 0px 0 #000, 0px 1px 0 #000,
-      0px 2px 0 #000, 1px -2px 0 #000, 1px -1px 0 #000, 1px 0px 0 #000, 1px 1px 0 #000,
-      1px 2px 0 #000, 2px -2px 0 #000, 2px -1px 0 #000, 2px 0px 0 #000, 2px 1px 0 #000,
-      2px 2px 0 #000;
-  }
-  .text-outline-4 {
-    text-shadow: -4px -4px 0 #000, -4px -3px 0 #000, -4px -2px 0 #000, -4px -1px 0 #000,
-      -4px 0px 0 #000, -4px 1px 0 #000, -4px 2px 0 #000, -4px 3px 0 #000, -4px 4px 0 #000,
-      -3px -4px 0 #000, -3px -3px 0 #000, -3px -2px 0 #000, -3px -1px 0 #000, -3px 0px 0 #000,
-      -3px 1px 0 #000, -3px 2px 0 #000, -3px 3px 0 #000, -3px 4px 0 #000, -2px -4px 0 #000,
-      -2px -3px 0 #000, -2px -2px 0 #000, -2px -1px 0 #000, -2px 0px 0 #000, -2px 1px 0 #000,
-      -2px 2px 0 #000, -2px 3px 0 #000, -2px 4px 0 #000, -1px -4px 0 #000, -1px -3px 0 #000,
-      -1px -2px 0 #000, -1px -1px 0 #000, -1px 0px 0 #000, -1px 1px 0 #000, -1px 2px 0 #000,
-      -1px 3px 0 #000, -1px 4px 0 #000, 0px -4px 0 #000, 0px -3px 0 #000, 0px -2px 0 #000,
-      0px -1px 0 #000, 0px 0px 0 #000, 0px 1px 0 #000, 0px 2px 0 #000, 0px 3px 0 #000,
-      0px 4px 0 #000, 1px -4px 0 #000, 1px -3px 0 #000, 1px -2px 0 #000, 1px -1px 0 #000,
-      1px 0px 0 #000, 1px 1px 0 #000, 1px 2px 0 #000, 1px 3px 0 #000, 1px 4px 0 #000,
-      2px -4px 0 #000, 2px -3px 0 #000, 2px -2px 0 #000, 2px -1px 0 #000, 2px 0px 0 #000,
-      2px 1px 0 #000, 2px 2px 0 #000, 2px 3px 0 #000, 2px 4px 0 #000, 3px -4px 0 #000,
-      3px -3px 0 #000, 3px -2px 0 #000, 3px -1px 0 #000, 3px 0px 0 #000, 3px 1px 0 #000,
-      3px 2px 0 #000, 3px 3px 0 #000, 3px 4px 0 #000, 4px -4px 0 #000, 4px -3px 0 #000,
-      4px -2px 0 #000, 4px -1px 0 #000, 4px 0px 0 #000, 4px 1px 0 #000, 4px 2px 0 #000,
-      4px 3px 0 #000, 4px 4px 0 #000;
-  }
+.title-stroke {
+  text-shadow: 3px 3px 3px var(--secondary), -3px -3px 3px var(--secondary),
+    3px -3px 3px var(--secondary), -3px 3px 3px var(--secondary),
+    3px 3px 3px var(--secondary);
+}
+
+.stroke {
+  text-shadow: 2px 2px 2px var(--secondary), -2px -2px 2px var(--secondary),
+  2px -2px 2px var(--secondary), -2px 2px 2px var(--secondary),
+  2px 2px 2px var(--secondary);
 }
