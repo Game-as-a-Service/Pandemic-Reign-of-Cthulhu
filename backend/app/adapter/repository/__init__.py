@@ -1,7 +1,7 @@
 from app.domain import Game
 
 
-class AbstractRepository:
+class AbstractGameRepository:
     async def save(self, game: Game):
         raise NotImplementedError("AbstractRepository.save")
 
@@ -9,10 +9,10 @@ class AbstractRepository:
         raise NotImplementedError("AbstractRepository.get_game")
 
 
-def get_repository():
+def get_game_repository():
     # TODO
     # - make it configurable at runtime
     # - set max limit of concurrent and ongoing games to save
-    from .in_mem import InMemoryRepository
+    from .in_mem import InMemoryGameRepository
 
-    return InMemoryRepository()
+    return InMemoryGameRepository()

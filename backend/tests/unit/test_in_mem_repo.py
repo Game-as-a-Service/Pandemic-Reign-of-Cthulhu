@@ -1,12 +1,12 @@
 import asyncio
 import pytest
 from app.domain import Game
-from app.adapter.repository.in_mem import InMemoryRepository
+from app.adapter.repository.in_mem import InMemoryGameRepository
 
 
 @pytest.fixture
 def repo():
-    return InMemoryRepository()
+    return InMemoryGameRepository()
 
 
 @pytest.fixture

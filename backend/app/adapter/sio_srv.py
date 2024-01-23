@@ -1,7 +1,7 @@
 import logging
 import asyncio
 import os
-from typing import Dict
+from typing import Dict, List
 
 import socketio
 from hypercorn.config import Config
@@ -18,6 +18,12 @@ srv = socketio.AsyncServer(async_mode="asgi")
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.WARNING)
 _logger.addHandler(logging.FileHandler(LOG_FILE_PATH["RTC"], mode="a"))
+
+
+class NewRoomMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameID: str
+    players: List[str]
 
 
 class ChatMsgData(BaseModel):
@@ -99,6 +105,14 @@ async def deinit_communication(sid, data: Dict):
             data=error,
             to=sid,
         )
+
+
+@srv.on(RtcConst.EVENTS.NEW_ROOM.value, namespace=RtcConst.NAMESPACE)
+async def _new_game_room(sid, data: Dict):
+    try:  # TODO, ensure this event is sent by authorized http server
+        data = NewRoomMsgData(**data)
+    except ValidationError as e:
+        _logger.error("%s", e)
 
 
 def gen_srv_task(host: str):

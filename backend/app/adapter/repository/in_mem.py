@@ -2,10 +2,10 @@ import asyncio
 from typing import Optional
 
 from app.domain import Game
-from app.adapter.repository import AbstractRepository
+from app.adapter.repository import AbstractGameRepository
 
 
-class InMemoryRepository(AbstractRepository):
+class InMemoryGameRepository(AbstractGameRepository):
     def __init__(self):
         self._lock = asyncio.Lock()
         self._games = {}
