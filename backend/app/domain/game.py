@@ -26,14 +26,16 @@ class GameFuncCodes(Enum):
     SWITCH_CHARACTER = 1003
     CLEAR_CHARACTER_SELECTION = 1004
     UPDATE_DIFFICULTY = 1005
-    USE_CASE_EXECUTE = 1099  ## TODO, rename this
+    ## TODO, rename the following members
+    USE_CASE_EXECUTE = 1099
+    RTC_ENDPOINT = 1098  ## for real-time communication like socket.io server endpoint
 
 
 class GameError(Exception):
     def __init__(
-        self, e_code: GameFuncCodes, fn_code: GameFuncCodes, msg: Optional[str] = None
+        self, e_code: GameErrorCodes, fn_code: GameFuncCodes, msg: Optional[str] = None
     ):
-        self.error_code: GameFuncCodes = e_code
+        self.error_code: GameErrorCodes = e_code
         self.func_code: GameFuncCodes = fn_code
         self.message = msg
 

@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, ConfigDict
 
 # data transfer objects (DTO) in the application
 # TODO, determine module path
@@ -63,3 +63,24 @@ class UpdateDifficultyDto(BaseModel):
 
 class UpdateCommonRespDto(BaseModel):
     message: str
+
+
+class RtcRoomMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameID: str
+    players: List[str]
+
+
+class ChatMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    msg: str
+    nickname: str  # TODO, replace with PlayerDto
+    gameID: str
+    client: str  ## client session ID
+
+
+class RtcInitMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    player: PlayerDto
+    gameID: str
+    client: str  # client session ID

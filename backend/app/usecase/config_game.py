@@ -12,8 +12,9 @@ from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
 
 
 class AbstractUseCase:
-    def __init__(self, repository, settings: Dict = None):
+    def __init__(self, repository, evt_emitter=None, settings: Dict = None):
         self.repository = repository
+        self.evt_emitter = evt_emitter
         self.settings = settings
 
 
@@ -29,6 +30,8 @@ class CreateGameUseCase(AbstractUseCase):
         game.add_players(data)
         self.rand_select_investigator(game)
         await self.repository.save(game)
+        if self.evt_emitter:
+            await self.evt_emitter.create_game(game)
         return presenter(self.settings, game.id)
 
     def rand_select_investigator(self, game: Game):

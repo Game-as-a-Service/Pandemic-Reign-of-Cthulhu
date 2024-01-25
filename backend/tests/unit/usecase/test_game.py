@@ -6,7 +6,7 @@ from app.dto import (
     UpdateDifficultyDto,
 )
 from app.domain import Game, GameError, GameErrorCodes, GameFuncCodes
-from app.adapter.repository import AbstractRepository
+from app.adapter.repository import AbstractGameRepository
 from app.adapter.presenter import create_game_presenter
 from app.usecase import (
     CreateGameUseCase,
@@ -15,7 +15,7 @@ from app.usecase import (
 )
 
 
-class MockRepository(AbstractRepository):
+class MockGameRepository(AbstractGameRepository):
     def __init__(self, save_error=None, mock_fetched: Game = None):
         self._save_error = save_error
         self._mock_fetched = mock_fetched
@@ -28,7 +28,7 @@ class MockRepository(AbstractRepository):
         if self._mock_fetched:
             return self._mock_fetched
         else:
-            raise UnitTestError("MockRepository.get_game")
+            raise UnitTestError("MockGameRepository.get_game")
 
 
 class UnitTestError(Exception):
@@ -38,7 +38,7 @@ class UnitTestError(Exception):
 class TestCreateGame:
     @pytest.mark.asyncio
     async def test_ok(self):
-        repository = MockRepository()
+        repository = MockGameRepository()
         settings = {"host": "unit.test.app.com"}
         data = [
             PlayerDto(id="x8eu3L", nickname="Sheep"),
@@ -46,20 +46,20 @@ class TestCreateGame:
             PlayerDto(id="h4oOp0", nickname="Llama"),
             PlayerDto(id="R0fj1B", nickname="Goat"),
         ]
-        uc = CreateGameUseCase(repository, settings)
+        uc = CreateGameUseCase(repository, settings=settings)
         resp = await uc.execute(data, create_game_presenter)
         assert resp.url is not None
         assert len(resp.url) > 0
 
     @pytest.mark.asyncio
     async def test_repo_error(self):
-        repository = MockRepository(save_error=UnitTestError("unit-test"))
+        repository = MockGameRepository(save_error=UnitTestError("unit-test"))
         settings = {"host": "unit.test.app.com"}
         data = [
             PlayerDto(id="x8eu3L", nickname="Sheep"),
             PlayerDto(id="R0fj1B", nickname="Goat"),
         ]
-        uc = CreateGameUseCase(repository, settings)
+        uc = CreateGameUseCase(repository, settings=settings)
         try:
             resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert 0
@@ -68,12 +68,12 @@ class TestCreateGame:
 
     @pytest.mark.asyncio
     async def test_only_one_player(self):
-        repository = MockRepository()
+        repository = MockGameRepository()
         settings = {"host": "unit.test.app.com"}
         data = [
             PlayerDto(id="x8eu3L", nickname="Sheep"),
         ]
-        uc = CreateGameUseCase(repository, settings)
+        uc = CreateGameUseCase(repository, settings=settings)
         with pytest.raises(GameError) as e:
             resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert e.func_code == GameFuncCodes.ADD_PLAYERS
@@ -81,7 +81,7 @@ class TestCreateGame:
 
     @pytest.mark.asyncio
     async def test_over_four_player(self):
-        repository = MockRepository()
+        repository = MockGameRepository()
         settings = {"host": "unit.test.app.com"}
         data = [
             PlayerDto(id="x8eu3L", nickname="Sheep"),
@@ -90,7 +90,7 @@ class TestCreateGame:
             PlayerDto(id="R0fj1B", nickname="Goat"),
             PlayerDto(id="oC9TNH", nickname="Alpaca"),
         ]
-        uc = CreateGameUseCase(repository, settings)
+        uc = CreateGameUseCase(repository, settings=settings)
         with pytest.raises(GameError) as e:
             resp = await uc.execute(data, create_game_presenter)  # noqa: F841
             assert e.func_code == GameFuncCodes.ADD_PLAYERS
@@ -101,7 +101,7 @@ class TestGetAvailInvestigatorFromGame:
     @pytest.mark.asyncio
     async def test_unselected_ok(self):
         mockgame = Game()
-        repository = MockRepository(mock_fetched=mockgame)
+        repository = MockGameRepository(mock_fetched=mockgame)
         uc = GetAvailableInvestigatorsUseCase(repository)
 
         def mock_presenter(items) -> ListInvestigatorsDto:
@@ -118,7 +118,7 @@ class TestUpdateGameDifficulty:
     @pytest.mark.asyncio
     async def test_ok(self):
         mockgame = Game()
-        repository = MockRepository(mock_fetched=mockgame)
+        repository = MockGameRepository(mock_fetched=mockgame)
         settings = {"host": "unit.test.app.com"}
         data = UpdateDifficultyDto(level="standard")
         uc = UpdateGameDifficultyUseCase(repository, settings)

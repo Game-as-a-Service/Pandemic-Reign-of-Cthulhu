@@ -6,7 +6,6 @@ from fastapi import FastAPI, APIRouter, status as FastApiHTTPstatus
 from fastapi.responses import JSONResponse
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
-from app.config import LOG_FILE_PATH
 
 from app.dto import (
     CreateGameReqDto,
@@ -22,9 +21,10 @@ from app.usecase import (
     SwitchInvestigatorUseCase,
     UpdateGameDifficultyUseCase,
 )
-from app.config import REST_HOST, REST_PORT
+from app.config import LOG_FILE_PATH, REST_HOST, REST_PORT
 from app.domain import GameError
-from app.adapter.repository import get_repository
+from app.adapter.event_emitter import SocketIoEventEmitter
+from app.adapter.repository import get_game_repository
 from app.adapter.presenter import read_investigator_presenter, create_game_presenter
 
 _logger = logging.getLogger(__name__)
@@ -54,7 +54,9 @@ class GameErrorHTTPResponse(JSONResponse):
 @_router.post("/games", response_model=CreateGameRespDto)
 async def create_game(req: CreateGameReqDto):
     uc = CreateGameUseCase(
-        repository=shared_context["repository"], settings=shared_context["settings"]
+        repository=shared_context["repository"],
+        evt_emitter=shared_context["evt_emit"],
+        settings=shared_context["settings"],
     )
     response = await uc.execute(req.players, create_game_presenter)
     return response
@@ -96,11 +98,14 @@ async def update_game_difficulty(game_id: str, req: UpdateDifficultyDto):
 async def lifetime_server_context(app: FastAPI):
     # TODO, parameters should be in separate python module or `json` , `toml` file
     settings = {"host": "localhost:8081"}
-    shared_context["repository"] = get_repository()
+    shared_context["repository"] = get_game_repository()
     shared_context["settings"] = settings
+    shared_context["evt_emit"] = SocketIoEventEmitter()
     yield
     ## TODO, de-initialize the context if necessary,
     # e.g. close database connections
+    evt_emit = shared_context.pop("evt_emit")
+    await evt_emit.deinit()
     shared_context.clear()
 
 
