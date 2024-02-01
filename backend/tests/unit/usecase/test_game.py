@@ -121,6 +121,6 @@ class TestUpdateGameDifficulty:
         repository = MockGameRepository(mock_fetched=mockgame)
         settings = {"host": "unit.test.app.com"}
         data = UpdateDifficultyDto(level="standard")
-        uc = UpdateGameDifficultyUseCase(repository, settings)
+        uc = UpdateGameDifficultyUseCase(repository, settings=settings)
         resp = await uc.execute(mockgame.id, data.level)
         assert resp.message is not None

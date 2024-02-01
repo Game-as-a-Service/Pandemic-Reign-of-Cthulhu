@@ -75,7 +75,10 @@ async def read_unselected_investigators(game_id: str):
 
 @_router.patch("/games/{game_id}/investigator", status_code=200)
 async def switch_investigator(game_id: str, req: UpdateInvestigatorDto):
-    uc = SwitchInvestigatorUseCase(shared_context["repository"])
+    uc = SwitchInvestigatorUseCase(
+        shared_context["repository"],
+        evt_emitter=shared_context["evt_emit"],
+    )
     try:
         await uc.execute(game_id, req.player_id, req.investigator)
     except GameError as e:
@@ -85,7 +88,9 @@ async def switch_investigator(game_id: str, req: UpdateInvestigatorDto):
 @_router.patch("/games/{game_id}/difficulty", response_model=UpdateCommonRespDto)
 async def update_game_difficulty(game_id: str, req: UpdateDifficultyDto):
     uc = UpdateGameDifficultyUseCase(
-        repository=shared_context["repository"], settings=shared_context["settings"]
+        repository=shared_context["repository"],
+        evt_emitter=shared_context["evt_emit"],
+        settings=shared_context["settings"],
     )
     try:
         response = await uc.execute(game_id, req.level)

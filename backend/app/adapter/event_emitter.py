@@ -1,8 +1,10 @@
+from typing import Dict
 import logging
 import socketio
 
+from app.dto import Investigator, Difficulty
 from app.config import LOG_FILE_PATH, RTC_HOST, RTC_PORT
-from app.constant import RealTimeCommConst as RtcConst
+from app.constant import RealTimeCommConst as RtcConst, GameRtcEvent
 from app.domain import Game
 
 _logger = logging.getLogger(__name__)
@@ -14,6 +16,14 @@ class AbsEventEmitter:
     async def create_game(self, game: Game):
         raise NotImplementedError("AbsEventEmitter.create_game")
 
+    async def switch_character(
+        self, game_id: str, player_id: str, new_invstg: Investigator
+    ):
+        raise NotImplementedError("AbsEventEmitter.switch_character")
+
+    async def update_difficulty(self, game_id: str, level: Difficulty):
+        raise NotImplementedError("AbsEventEmitter.update_difficulty")
+
 
 class SocketIoEventEmitter(AbsEventEmitter):
     def __init__(self):
@@ -23,12 +33,29 @@ class SocketIoEventEmitter(AbsEventEmitter):
 
     async def create_game(self, game: Game):
         data = {"gameID": game.id, "players": [p.id for p in game.players]}
+        await self.do_emit(data, evt=RtcConst.EVENTS.NEW_ROOM)
+
+    async def switch_character(
+        self, game_id: str, player_id: str, new_invstg: Investigator
+    ):
+        data = {
+            "gameID": game_id,
+            "player_id": player_id,
+            "investigator": new_invstg.value,
+        }
+        await self.do_emit(data, evt=RtcConst.EVENTS.CHARACTER)
+
+    async def update_difficulty(self, game_id: str, level: Difficulty):
+        data = {"gameID": game_id, "level": level.value}
+        await self.do_emit(data, evt=RtcConst.EVENTS.DIFFICULTY)
+
+    async def do_emit(self, data: Dict, evt: GameRtcEvent):
         try:
             if not self._client.connected:
                 await self._client.connect(self._url, namespace=self._namespace)
-            await self._client.emit(RtcConst.EVENTS.NEW_ROOM.value, data=data)
+            await self._client.emit(evt.value, data=data)
         except Exception as e:
-            _logger.error("send new-room event: %s", e)
+            _logger.error("emit event: %s", e)
             # TODO, reconnect if connection inactive
 
     async def deinit(self):

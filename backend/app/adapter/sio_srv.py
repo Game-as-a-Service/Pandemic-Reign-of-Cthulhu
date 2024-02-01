@@ -6,12 +6,18 @@ from typing import Dict
 import socketio
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
-from app.constant import RealTimeCommConst as RtcConst
+from app.constant import RealTimeCommConst as RtcConst, GameRtcEvent
 from app.config import RTC_HOST, RTC_PORT, LOG_FILE_PATH
 from app.adapter.repository import get_rtc_room_repository
-from app.dto import RtcRoomMsgData, ChatMsgData, RtcInitMsgData
+from app.dto import (
+    RtcRoomMsgData,
+    ChatMsgData,
+    RtcInitMsgData,
+    RtcCharacterMsgData,
+    RtcDifficultyMsgData,
+)
 from app.domain import GameError, GameErrorCodes, GameFuncCodes
 
 srv = socketio.AsyncServer(async_mode="asgi")
@@ -27,22 +33,24 @@ _logger.addHandler(logging.FileHandler(LOG_FILE_PATH["RTC"], mode="a"))
 _repo = get_rtc_room_repository()
 
 
-@srv.on(RtcConst.EVENTS.CHAT.value, namespace=RtcConst.NAMESPACE)
-async def _forward_chat_msg(sid, data: Dict):
+async def _generic_forward_msg(sid, data: Dict, evt: GameRtcEvent, msgtype: BaseModel):
     try:
-        ChatMsgData(**data)
+        validated = msgtype(**data)
         await srv.emit(
-            RtcConst.EVENTS.CHAT.value,
+            evt.value,
             data,
             namespace=RtcConst.NAMESPACE,
-            room=data["gameID"],
+            room=validated.gameID,
             skip_sid=sid,
         )
     except ValidationError as e:
         error = e.errors(include_url=False, include_input=False)
-        await srv.emit(
-            RtcConst.EVENTS.CHAT.value, data=error, namespace=RtcConst.NAMESPACE, to=sid
-        )
+        await srv.emit(evt.value, data=error, namespace=RtcConst.NAMESPACE, to=sid)
+
+
+@srv.on(RtcConst.EVENTS.CHAT.value, namespace=RtcConst.NAMESPACE)
+async def _forward_chat_msg(sid, data: Dict):
+    await _generic_forward_msg(sid, data, evt=RtcConst.EVENTS.CHAT, msgtype=ChatMsgData)
 
 
 async def check_room_exist(repo, data: RtcInitMsgData):
@@ -134,6 +142,22 @@ async def _new_game_room(sid, data: Dict):
         await _repo.save(validated)
     except ValidationError as e:
         _logger.error("%s", e)
+
+
+@srv.on(RtcConst.EVENTS.CHARACTER.value, namespace=RtcConst.NAMESPACE)
+async def _player_switch_character(sid, data: Dict):
+    # TODO, ensure this event is sent by authorized http server
+    await _generic_forward_msg(
+        sid, data, evt=RtcConst.EVENTS.CHARACTER, msgtype=RtcCharacterMsgData
+    )
+
+
+@srv.on(RtcConst.EVENTS.DIFFICULTY.value, namespace=RtcConst.NAMESPACE)
+async def _update_game_difficulty(sid, data: Dict):
+    # TODO, ensure this event is sent by authorized http server
+    await _generic_forward_msg(
+        sid, data, evt=RtcConst.EVENTS.DIFFICULTY, msgtype=RtcDifficultyMsgData
+    )
 
 
 def gen_srv_task(host: str):

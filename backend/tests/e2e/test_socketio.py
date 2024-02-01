@@ -104,6 +104,19 @@ class MockClient(MockiAbstractClient):
             self._msg_log.append(item)
             assert self.messages_log == expect_sender.messages_log
 
+    async def verify_character_update(self, expect_player, expect_character: str):
+        evts: List = await self._sio_client.receive(timeout=3)
+        assert len(evts) == 2
+        assert evts[0] == RtcConst.EVENTS.CHARACTER.value
+        assert evts[1]["player_id"] == expect_player.player_id
+        assert evts[1]["investigator"] == expect_character
+
+    async def verify_difficulty(self, expect: str):
+        evts: List = await self._sio_client.receive(timeout=3)
+        assert len(evts) == 2
+        assert evts[0] == RtcConst.EVENTS.DIFFICULTY.value
+        assert evts[1]["level"] == expect
+
 
 class MockiHttpServer(MockiAbstractClient):
     async def new_room(self, room_id: str, members: List[str]):
@@ -114,6 +127,14 @@ class MockiHttpServer(MockiAbstractClient):
                 "gameID": room_id,
             },
         )
+
+    async def switch_character(self, room_id: str, player: str, character: str):
+        data = {"player_id": player, "gameID": room_id, "investigator": character}
+        await self._sio_client.emit(RtcConst.EVENTS.CHARACTER.value, data=data)
+
+    async def set_difficulty(self, room_id: str, level: str):
+        data = {"level": level, "gameID": room_id}
+        await self._sio_client.emit(RtcConst.EVENTS.DIFFICULTY.value, data=data)
 
 
 class TestRealTimeComm:
@@ -204,4 +225,45 @@ class TestRealTimeComm:
         await client.verify_join([client], True)
         await client.leave(room_id="c0034")
         await client.disconnect()
+        await http_server.disconnect()
+
+    @pytest.mark.asyncio
+    async def test_forward_game_state_msg(self):
+        http_server = MockiHttpServer(RtcConst.NAMESPACE)
+        clients = [
+            MockClient(nickname="Fabio", player_id="u0017"),
+            MockClient(nickname="Von Mc", player_id="u0018"),
+        ]
+        game_room = "a0020"
+
+        await http_server.connect(SERVER_URL)
+        await http_server.new_room(game_room, members=[c.player_id for c in clients])
+        for client in clients:
+            await client.connect(SERVER_URL)
+            await client.join(room_id=game_room)
+
+        await clients[0].verify_join(clients[:], True)
+        await clients[1].verify_join(clients[1:], True)
+
+        await http_server.switch_character(
+            game_room, clients[1].player_id, character="magician"
+        )
+        await clients[0].verify_character_update(clients[1], "magician")
+        await clients[1].verify_character_update(clients[1], "magician")
+        await http_server.switch_character(
+            game_room, clients[0].player_id, character="driver"
+        )
+        await clients[0].verify_character_update(clients[0], "driver")
+        await clients[1].verify_character_update(clients[0], "driver")
+
+        await http_server.set_difficulty(game_room, level="expert")
+        await clients[0].verify_difficulty("expert")
+        await clients[1].verify_difficulty("expert")
+        await http_server.set_difficulty(game_room, level="standard")
+        await clients[0].verify_difficulty("standard")
+        await clients[1].verify_difficulty("standard")
+
+        for client in clients:
+            await client.leave(room_id=game_room)
+            await client.disconnect()
         await http_server.disconnect()

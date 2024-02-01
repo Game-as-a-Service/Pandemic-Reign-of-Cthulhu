@@ -7,11 +7,13 @@ from pydantic import BaseModel, RootModel, ConfigDict
 
 
 class PlayerDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     id: str
     nickname: str
 
 
 class CreateGameReqDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     players: List[PlayerDto]
 
 
@@ -37,6 +39,7 @@ class Investigator(Enum):
 
 
 class SingleInvestigatorDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     investigator: Investigator
 
 
@@ -44,6 +47,7 @@ ListInvestigatorsDto = RootModel[List[SingleInvestigatorDto]]
 
 
 class UpdateInvestigatorDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     investigator: Investigator
     player_id: str
 
@@ -58,6 +62,7 @@ class Difficulty(Enum):
 
 
 class UpdateDifficultyDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     level: Difficulty
 
 
@@ -84,3 +89,16 @@ class RtcInitMsgData(BaseModel):
     player: PlayerDto
     gameID: str
     client: str  # client session ID
+
+
+class RtcCharacterMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameID: str
+    investigator: Investigator
+    player_id: str
+
+
+class RtcDifficultyMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameID: str
+    level: Difficulty
