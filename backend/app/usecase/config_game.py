@@ -71,6 +71,8 @@ class SwitchInvestigatorUseCase(AbstractUseCase):
 
         game.switch_character(player_id, new_invstg)
         await self.repository.save(game)
+        if self.evt_emitter:
+            await self.evt_emitter.switch_character(game_id, player_id, new_invstg)
 
 
 class UpdateGameDifficultyUseCase(AbstractUseCase):
@@ -83,5 +85,7 @@ class UpdateGameDifficultyUseCase(AbstractUseCase):
             )
         game.update_difficulty(level)
         await self.repository.save(game)
+        if self.evt_emitter:
+            await self.evt_emitter.update_difficulty(game_id, level)
         message = "Update Game {} Difficulty Successfully".format(game.id)
         return UpdateCommonRespDto(message=message)
