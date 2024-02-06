@@ -1,0 +1,12 @@
+
+enum Investigator:byte {
+    DETECTIVE = 0, DOCTOR, DRIVER, HUNTER,
+    MAGICIAN, OCCULTIST, REPORTER
+}
+
+table CharacterSelection {
+    game_id: string (required);
+    player_id: string (required);
+    investigator: Investigator;
+}
+
