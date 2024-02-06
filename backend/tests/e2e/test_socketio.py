@@ -5,7 +5,7 @@ import socketio
 
 from app.config import RTC_HOST, RTC_PORT
 from app.constant import RealTimeCommConst as RtcConst
-from app.dto import Investigator, RtcCharacterMsgData
+from app.dto import Investigator, Difficulty, RtcCharacterMsgData, RtcDifficultyMsgData
 
 SERVER_URL = "http://%s:%s" % (RTC_HOST, RTC_PORT)
 
@@ -117,7 +117,8 @@ class MockClient(MockiAbstractClient):
         evts: List = await self._sio_client.receive(timeout=3)
         assert len(evts) == 2
         assert evts[0] == RtcConst.EVENTS.DIFFICULTY.value
-        assert evts[1]["level"] == expect
+        obj = RtcDifficultyMsgData.deserialize(evts[1])
+        assert obj.level.value == expect
 
 
 class MockiHttpServer(MockiAbstractClient):
@@ -136,8 +137,8 @@ class MockiHttpServer(MockiAbstractClient):
         data = RtcCharacterMsgData.serialize(room_id, player, character)
         await self._sio_client.emit(RtcConst.EVENTS.CHARACTER.value, data=data)
 
-    async def set_difficulty(self, room_id: str, level: str):
-        data = {"level": level, "gameID": room_id}
+    async def set_difficulty(self, room_id: str, level: Difficulty):
+        data = RtcDifficultyMsgData.serialize(room_id, level)
         await self._sio_client.emit(RtcConst.EVENTS.DIFFICULTY.value, data=data)
 
 
@@ -260,10 +261,10 @@ class TestRealTimeComm:
         await clients[0].verify_character_update(clients[0], "driver")
         await clients[1].verify_character_update(clients[0], "driver")
 
-        await http_server.set_difficulty(game_room, level="expert")
+        await http_server.set_difficulty(game_room, level=Difficulty.EXPERT)
         await clients[0].verify_difficulty("expert")
         await clients[1].verify_difficulty("expert")
-        await http_server.set_difficulty(game_room, level="standard")
+        await http_server.set_difficulty(game_room, level=Difficulty.STANDARD)
         await clients[0].verify_difficulty("standard")
         await clients[1].verify_difficulty("standard")
 

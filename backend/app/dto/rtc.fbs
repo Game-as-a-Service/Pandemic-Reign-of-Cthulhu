@@ -3,10 +3,18 @@ enum Investigator:byte {
     DETECTIVE = 0, DOCTOR, DRIVER, HUNTER,
     MAGICIAN, OCCULTIST, REPORTER
 }
+enum Difficulty:byte {
+    INTRODUCTORY = 0, STANDARD, EXPERT
+}
 
 table CharacterSelection {
     game_id: string (required);
     player_id: string (required);
     investigator: Investigator;
+}
+
+table DifficultyConfig {
+    game_id: string (required);
+    level: Difficulty;
 }
 

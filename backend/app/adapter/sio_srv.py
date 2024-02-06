@@ -170,7 +170,10 @@ async def _player_switch_character(sid, data: bytes):
 async def _update_game_difficulty(sid, data: Dict):
     # TODO, ensure this event is sent by authorized http server
     await _generic_forward_msg(
-        sid, data, evt=RtcConst.EVENTS.DIFFICULTY, validator=RtcDifficultyMsgData
+        sid,
+        data,
+        evt=RtcConst.EVENTS.DIFFICULTY,
+        validator=RtcDifficultyMsgData.deserialize,
     )
 
 

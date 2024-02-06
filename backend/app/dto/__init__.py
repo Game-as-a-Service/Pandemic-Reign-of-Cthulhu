@@ -3,7 +3,12 @@ from typing import List
 from pydantic import BaseModel, RootModel, ConfigDict
 import flatbuffers
 
-from .rtc import CharacterSelection, Investigator as InvestigatorFbs
+from .rtc import (
+    CharacterSelection,
+    Investigator as InvestigatorFbs,
+    DifficultyConfig,
+    Difficulty as DifficultyFbs,
+)
 
 # data transfer objects (DTO) in the application
 # TODO, determine module path
@@ -100,6 +105,27 @@ class Difficulty(Enum):
     # 專家難度
     EXPERT = "expert"
 
+    @classmethod
+    def from_fbs(cls, value):
+        fbs = DifficultyFbs.Difficulty()
+        match value:
+            case fbs.INTRODUCTORY:
+                return cls.INTRODUCTORY
+            case fbs.STANDARD:
+                return cls.STANDARD
+            case fbs.EXPERT:
+                return cls.EXPERT
+
+    def to_fbs(self):
+        fbs = DifficultyFbs.Difficulty()
+        match self:
+            case self.INTRODUCTORY:
+                return fbs.INTRODUCTORY
+            case self.STANDARD:
+                return fbs.STANDARD
+            case self.EXPERT:
+                return fbs.EXPERT
+
 
 class UpdateDifficultyDto(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -166,3 +192,22 @@ class RtcDifficultyMsgData(BaseModel):
     model_config = ConfigDict(extra="forbid")
     gameID: str
     level: Difficulty
+
+    def serialize(game_id: str, lvl: Difficulty) -> bytes:
+        builder = flatbuffers.Builder(128)
+        game_id = builder.CreateString(game_id)
+        lvl = lvl.to_fbs()
+        DifficultyConfig.Start(builder)
+        DifficultyConfig.AddGameId(builder, game_id)
+        DifficultyConfig.AddLevel(builder, lvl)
+        selection = DifficultyConfig.End(builder)
+        builder.Finish(selection)
+        serial = builder.Output()  # byte-array
+        return bytes(serial)
+
+    def deserialize(data: bytes):
+        buf = bytearray(data)
+        obj = DifficultyConfig.DifficultyConfig.GetRootAs(buf, offset=0)
+        game_id = obj.GameId().decode("utf-8")
+        lvl = Difficulty.from_fbs(obj.Level())
+        return RtcDifficultyMsgData(gameID=game_id, level=lvl)
