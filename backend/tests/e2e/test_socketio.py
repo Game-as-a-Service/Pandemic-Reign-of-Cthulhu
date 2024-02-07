@@ -5,6 +5,7 @@ import socketio
 
 from app.config import RTC_HOST, RTC_PORT
 from app.constant import RealTimeCommConst as RtcConst
+from app.dto import Investigator, Difficulty, RtcCharacterMsgData, RtcDifficultyMsgData
 
 SERVER_URL = "http://%s:%s" % (RTC_HOST, RTC_PORT)
 
@@ -108,14 +109,16 @@ class MockClient(MockiAbstractClient):
         evts: List = await self._sio_client.receive(timeout=3)
         assert len(evts) == 2
         assert evts[0] == RtcConst.EVENTS.CHARACTER.value
-        assert evts[1]["player_id"] == expect_player.player_id
-        assert evts[1]["investigator"] == expect_character
+        obj = RtcCharacterMsgData.deserialize(evts[1])
+        assert obj.player_id == expect_player.player_id
+        assert obj.investigator.value == expect_character
 
     async def verify_difficulty(self, expect: str):
         evts: List = await self._sio_client.receive(timeout=3)
         assert len(evts) == 2
         assert evts[0] == RtcConst.EVENTS.DIFFICULTY.value
-        assert evts[1]["level"] == expect
+        obj = RtcDifficultyMsgData.deserialize(evts[1])
+        assert obj.level.value == expect
 
 
 class MockiHttpServer(MockiAbstractClient):
@@ -128,12 +131,14 @@ class MockiHttpServer(MockiAbstractClient):
             },
         )
 
-    async def switch_character(self, room_id: str, player: str, character: str):
-        data = {"player_id": player, "gameID": room_id, "investigator": character}
+    async def switch_character(
+        self, room_id: str, player: str, character: Investigator
+    ):
+        data = RtcCharacterMsgData.serialize(room_id, player, character)
         await self._sio_client.emit(RtcConst.EVENTS.CHARACTER.value, data=data)
 
-    async def set_difficulty(self, room_id: str, level: str):
-        data = {"level": level, "gameID": room_id}
+    async def set_difficulty(self, room_id: str, level: Difficulty):
+        data = RtcDifficultyMsgData.serialize(room_id, level)
         await self._sio_client.emit(RtcConst.EVENTS.DIFFICULTY.value, data=data)
 
 
@@ -246,20 +251,20 @@ class TestRealTimeComm:
         await clients[1].verify_join(clients[1:], True)
 
         await http_server.switch_character(
-            game_room, clients[1].player_id, character="magician"
+            game_room, clients[1].player_id, character=Investigator.MAGICIAN
         )
         await clients[0].verify_character_update(clients[1], "magician")
         await clients[1].verify_character_update(clients[1], "magician")
         await http_server.switch_character(
-            game_room, clients[0].player_id, character="driver"
+            game_room, clients[0].player_id, character=Investigator.DRIVER
         )
         await clients[0].verify_character_update(clients[0], "driver")
         await clients[1].verify_character_update(clients[0], "driver")
 
-        await http_server.set_difficulty(game_room, level="expert")
+        await http_server.set_difficulty(game_room, level=Difficulty.EXPERT)
         await clients[0].verify_difficulty("expert")
         await clients[1].verify_difficulty("expert")
-        await http_server.set_difficulty(game_room, level="standard")
+        await http_server.set_difficulty(game_room, level=Difficulty.STANDARD)
         await clients[0].verify_difficulty("standard")
         await clients[1].verify_difficulty("standard")
 

@@ -17,6 +17,8 @@ hypercorn = "^0.14"
 python-socketio = "^5.10.0"
 aiohttp = "^3.9.1"
 
+flatbuffers = "^23.5.26"
+
 [tool.poetry.group.test]
 
 [tool.poetry.group.test.dependencies]
