@@ -19,3 +19,11 @@ def test_get_investigator(player):
 
 def test_not_set(player):
     assert player.get_investigator() is None
+
+
+def test_started(player):
+    assert player.started is False
+    player.start()
+    assert player.started is True
+    player.start()
+    assert player.started is True

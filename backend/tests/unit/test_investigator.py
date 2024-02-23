@@ -216,3 +216,24 @@ def test_switch_to_unselected(game, ut_data):
             game.switch_character(d["player_id"], d["expect"])
         player = game.get_player(d["player_id"])
         assert player.get_investigator() == d["actual"]
+
+
+def test_switch_and_game_start(game):
+    setup_data = [
+        PlayerDto(id="8e1u3g", nickname="Hawk"),
+        PlayerDto(id="e1u30B", nickname="Pelican"),
+    ]
+    assert game.add_players(player_dtos=setup_data) is None
+    for p in game.players:
+        assert p.get_investigator() is None
+
+    with pytest.raises(GameError) as e:
+        game.start("8e1u3g")
+        assert e.value == GameErrorCodes.INVALID_INVESTIGATOR
+
+    game.switch_character("8e1u3g", Investigator.OCCULTIST)
+    game.start("8e1u3g")
+
+    with pytest.raises(GameError) as e:
+        game.switch_character("8e1u3g", Investigator.DRIVER)
+        assert e.value == GameErrorCodes.PLAYER_ALREADY_STARTED

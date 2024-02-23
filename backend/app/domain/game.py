@@ -18,6 +18,7 @@ class GameErrorCodes(Enum):
     INVESTIGATOR_CHOSEN = (1003, 409)
     INVALID_PLAYER = (1004, 422)
     GAME_NOT_FOUND = (1005, 404)
+    PLAYER_ALREADY_STARTED = (1006, 400)
 
 
 class GameFuncCodes(Enum):
@@ -122,6 +123,11 @@ class Game:
                 e_code=GameErrorCodes.INVALID_PLAYER,
                 fn_code=GameFuncCodes.SWITCH_CHARACTER,
             )
+        if player.started:
+            raise GameError(
+                e_code=GameErrorCodes.PLAYER_ALREADY_STARTED,
+                fn_code=GameFuncCodes.SWITCH_CHARACTER,
+            )
         old_invstg = player.get_investigator()
         try:
             if old_invstg:
@@ -149,9 +155,15 @@ class Game:
                 e_code=GameErrorCodes.INVALID_PLAYER,
                 fn_code=GameFuncCodes.START_GAME,
             )
+        if player.get_investigator() is None:
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_INVESTIGATOR,
+                fn_code=GameFuncCodes.START_GAME,
+            )
+        player.start()
+        all_started = all([p.started for p in self.players])
+        if all_started:
+            pass
         # TODO
-        # - set up ready flag in each player, once the flag is set, the player is
-        #   no longer able to change the configuration
         # - initialize all types of cards, card deck, map (number of cultists in each
         #   location), player status e.g. sanity points
-        pass
