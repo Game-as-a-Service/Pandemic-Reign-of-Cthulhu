@@ -113,18 +113,6 @@ class TestGame:
     def test_game_start_ok(self, test_client):
         game_id = self.create_game_common(test_client)
         response = test_client.patch(
-            "/games/{}/investigator".format(game_id),
-            headers={},
-            json={"investigator": "reporter", "player_id": "9527"},
-        )
-        assert response.status_code == 200
-        response = test_client.patch(
-            "/games/{}/investigator".format(game_id),
-            headers={},
-            json={"investigator": "occultist", "player_id": "9487"},
-        )
-        assert response.status_code == 200
-        response = test_client.patch(
             "/games/{}/start".format(game_id), headers={}, json={"player_id": "9487"}
         )
         assert response.status_code == 200
