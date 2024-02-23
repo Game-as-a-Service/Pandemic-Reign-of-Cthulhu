@@ -17,6 +17,7 @@ from app.dto import (
     RtcInitMsgData,
     RtcCharacterMsgData,
     RtcDifficultyMsgData,
+    RtcGameStartMsgData,
 )
 from app.domain import GameError, GameErrorCodes, GameFuncCodes
 
@@ -174,6 +175,17 @@ async def _update_game_difficulty(sid, data: Dict):
         data,
         evt=RtcConst.EVENTS.DIFFICULTY,
         validator=RtcDifficultyMsgData.deserialize,
+    )
+
+
+@srv.on(RtcConst.EVENTS.GAME_START.value, namespace=RtcConst.NAMESPACE)
+async def _start_game(sid, data: bytes):
+    # TODO, ensure this event is sent by authorized http server
+    await _generic_forward_msg(
+        sid,
+        data,
+        evt=RtcConst.EVENTS.GAME_START,
+        validator=RtcGameStartMsgData.deserialize,
     )
 
 

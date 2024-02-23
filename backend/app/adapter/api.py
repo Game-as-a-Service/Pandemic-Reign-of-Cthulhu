@@ -14,12 +14,14 @@ from app.dto import (
     UpdateInvestigatorDto,
     UpdateDifficultyDto,
     UpdateCommonRespDto,
+    GameStartDto,
 )
 from app.usecase import (
     CreateGameUseCase,
     GetAvailableInvestigatorsUseCase,
     SwitchInvestigatorUseCase,
     UpdateGameDifficultyUseCase,
+    GameStartUseCase,
 )
 from app.config import LOG_FILE_PATH, REST_HOST, REST_PORT
 from app.domain import GameError
@@ -95,6 +97,18 @@ async def update_game_difficulty(game_id: str, req: UpdateDifficultyDto):
     try:
         response = await uc.execute(game_id, req.level)
         return response
+    except GameError as e:
+        return GameErrorHTTPResponse(e)
+
+
+@_router.patch("/games/{game_id}/start", status_code=200)
+async def start_game(game_id: str, req: GameStartDto):
+    uc = GameStartUseCase(
+        repository=shared_context["repository"],
+        evt_emitter=shared_context["evt_emit"],
+    )
+    try:
+        await uc.execute(game_id, req.player_id)
     except GameError as e:
         return GameErrorHTTPResponse(e)
 

@@ -3,4 +3,5 @@ from .config_game import (
     GetAvailableInvestigatorsUseCase,  # noqa: F401
     SwitchInvestigatorUseCase,  # noqa: F401
     UpdateGameDifficultyUseCase,  # noqa: F401
+    GameStartUseCase,  # noqa: F401
 )

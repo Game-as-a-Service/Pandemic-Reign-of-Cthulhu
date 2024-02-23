@@ -8,6 +8,7 @@ from .rtc import (
     Investigator as InvestigatorFbs,
     DifficultyConfig,
     Difficulty as DifficultyFbs,
+    GameStart as GameStartFbs,
 )
 
 # data transfer objects (DTO) in the application
@@ -136,6 +137,11 @@ class UpdateCommonRespDto(BaseModel):
     message: str
 
 
+class GameStartDto(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    player_id: str
+
+
 class RtcRoomMsgData(BaseModel):
     model_config = ConfigDict(extra="forbid")
     gameID: str
@@ -211,3 +217,28 @@ class RtcDifficultyMsgData(BaseModel):
         game_id = obj.GameId().decode("utf-8")
         lvl = Difficulty.from_fbs(obj.Level())
         return RtcDifficultyMsgData(gameID=game_id, level=lvl)
+
+
+class RtcGameStartMsgData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameID: str
+    player_id: str
+
+    def serialize(game_id: str, player_id: str) -> bytes:
+        builder = flatbuffers.Builder(128)
+        game_id = builder.CreateString(game_id)
+        player_id = builder.CreateString(player_id)
+        GameStartFbs.Start(builder)
+        GameStartFbs.AddGameId(builder, game_id)
+        GameStartFbs.AddPlayerId(builder, player_id)
+        starter = GameStartFbs.End(builder)
+        builder.Finish(starter)
+        serial = builder.Output()  # byte-array
+        return bytes(serial)
+
+    def deserialize(data: bytes):
+        buf = bytearray(data)
+        obj = GameStartFbs.GameStart.GetRootAs(buf, offset=0)
+        game_id = obj.GameId().decode("utf-8")
+        player = obj.PlayerId().decode("utf-8")
+        return RtcGameStartMsgData(gameID=game_id, player_id=player)

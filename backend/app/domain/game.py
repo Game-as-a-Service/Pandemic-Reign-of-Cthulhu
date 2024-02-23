@@ -26,6 +26,7 @@ class GameFuncCodes(Enum):
     SWITCH_CHARACTER = 1003
     CLEAR_CHARACTER_SELECTION = 1004
     UPDATE_DIFFICULTY = 1005
+    START_GAME = 1006
     ## TODO, rename the following members
     USE_CASE_EXECUTE = 1099
     RTC_ENDPOINT = 1098  ## for real-time communication like socket.io server endpoint
@@ -140,3 +141,17 @@ class Game:
 
     def update_difficulty(self, difficulty: Difficulty):
         self._difficulty = difficulty
+
+    def start(self, player_id: str):
+        player = self.get_player(player_id)
+        if player is None:
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_PLAYER,
+                fn_code=GameFuncCodes.START_GAME,
+            )
+        # TODO
+        # - set up ready flag in each player, once the flag is set, the player is
+        #   no longer able to change the configuration
+        # - initialize all types of cards, card deck, map (number of cultists in each
+        #   location), player status e.g. sanity points
+        pass
