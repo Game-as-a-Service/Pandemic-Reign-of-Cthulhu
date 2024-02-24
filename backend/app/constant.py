@@ -12,6 +12,7 @@ class GameRtcEvent(Enum):
     NEW_ROOM = "new_room"
     CHARACTER = "character"
     DIFFICULTY = "difficulty"
+    GAME_START = "game_start"
 
 
 class RealTimeCommConst:

@@ -89,3 +89,17 @@ class UpdateGameDifficultyUseCase(AbstractUseCase):
             await self.evt_emitter.update_difficulty(game_id, level)
         message = "Update Game {} Difficulty Successfully".format(game.id)
         return UpdateCommonRespDto(message=message)
+
+
+class GameStartUseCase(AbstractUseCase):
+    async def execute(self, game_id: str, player_id: str):
+        game = await self.repository.get_game(game_id)
+        if game is None:
+            raise GameError(
+                e_code=GameErrorCodes.GAME_NOT_FOUND,
+                fn_code=GameFuncCodes.USE_CASE_EXECUTE,
+            )
+        game.start(player_id)
+        await self.repository.save(game)
+        if self.evt_emitter:
+            await self.evt_emitter.start_game(game_id, player_id)

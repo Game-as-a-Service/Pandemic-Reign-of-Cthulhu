@@ -156,6 +156,7 @@ paths:
                       - investigator-already-chosen
                       - invalid-player
                       - invalid-investigator
+                      - player-alreaady-started
                 example: investigator-already-chosen
                 
   /games/{gameId}/difficulty:
@@ -203,25 +204,20 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        description: JSON object that specifies player ID
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                player_id:
+                  type: string
+                  example: e2355667-e89b-12d3-a456-426614174000
       responses:
         '200':
-          description: Player readiness status, return list of player IDs who are ready
-          content:
-            application/json:
-              example:
-                ready: ["player-id-01", "player-id-02"]
-                not_ready: ["player-id-03", "player-id-04"]
-              schema:
-                type: object
-                properties:
-                  ready:
-                    type: array
-                    items:
-                      type: string
-                  not_ready:
-                    type: array
-                    items:
-                      type: string
+          description: Player is ready
         '400':
           description: Bad Request
           content:
@@ -235,6 +231,7 @@ paths:
                     type: string
                     enum:
                       - invalid-player
+                      - invalid-investigator
                       - invalid-game-id
                 example: invalid-player
 

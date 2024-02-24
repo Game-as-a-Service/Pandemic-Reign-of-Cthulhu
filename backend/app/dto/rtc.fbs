@@ -18,3 +18,8 @@ table DifficultyConfig {
     level: Difficulty;
 }
 
+table GameStart {
+    game_id: string (required);
+    player_id: string (required);
+}
+

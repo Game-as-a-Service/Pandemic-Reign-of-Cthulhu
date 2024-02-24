@@ -2,7 +2,13 @@ from typing import Dict, Union
 import logging
 import socketio
 
-from app.dto import Investigator, Difficulty, RtcCharacterMsgData, RtcDifficultyMsgData
+from app.dto import (
+    Investigator,
+    Difficulty,
+    RtcCharacterMsgData,
+    RtcDifficultyMsgData,
+    RtcGameStartMsgData,
+)
 from app.config import LOG_FILE_PATH, RTC_HOST, RTC_PORT
 from app.constant import RealTimeCommConst as RtcConst, GameRtcEvent
 from app.domain import Game
@@ -44,6 +50,10 @@ class SocketIoEventEmitter(AbsEventEmitter):
     async def update_difficulty(self, game_id: str, level: Difficulty):
         data = RtcDifficultyMsgData.serialize(game_id, level)
         await self.do_emit(data, evt=RtcConst.EVENTS.DIFFICULTY)
+
+    async def start_game(self, game_id: str, player_id: str):
+        data = RtcGameStartMsgData.serialize(game_id, player_id)
+        await self.do_emit(data, evt=RtcConst.EVENTS.GAME_START)
 
     async def do_emit(self, data: Union[Dict, bytes], evt: GameRtcEvent):
         try:

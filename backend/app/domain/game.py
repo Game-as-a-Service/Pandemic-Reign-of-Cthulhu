@@ -18,6 +18,7 @@ class GameErrorCodes(Enum):
     INVESTIGATOR_CHOSEN = (1003, 409)
     INVALID_PLAYER = (1004, 422)
     GAME_NOT_FOUND = (1005, 404)
+    PLAYER_ALREADY_STARTED = (1006, 400)
 
 
 class GameFuncCodes(Enum):
@@ -26,6 +27,7 @@ class GameFuncCodes(Enum):
     SWITCH_CHARACTER = 1003
     CLEAR_CHARACTER_SELECTION = 1004
     UPDATE_DIFFICULTY = 1005
+    START_GAME = 1006
     ## TODO, rename the following members
     USE_CASE_EXECUTE = 1099
     RTC_ENDPOINT = 1098  ## for real-time communication like socket.io server endpoint
@@ -121,6 +123,11 @@ class Game:
                 e_code=GameErrorCodes.INVALID_PLAYER,
                 fn_code=GameFuncCodes.SWITCH_CHARACTER,
             )
+        if player.started:
+            raise GameError(
+                e_code=GameErrorCodes.PLAYER_ALREADY_STARTED,
+                fn_code=GameFuncCodes.SWITCH_CHARACTER,
+            )
         old_invstg = player.get_investigator()
         try:
             if old_invstg:
@@ -140,3 +147,23 @@ class Game:
 
     def update_difficulty(self, difficulty: Difficulty):
         self._difficulty = difficulty
+
+    def start(self, player_id: str):
+        player = self.get_player(player_id)
+        if player is None:
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_PLAYER,
+                fn_code=GameFuncCodes.START_GAME,
+            )
+        if player.get_investigator() is None:
+            raise GameError(
+                e_code=GameErrorCodes.INVALID_INVESTIGATOR,
+                fn_code=GameFuncCodes.START_GAME,
+            )
+        player.start()
+        all_started = all([p.started for p in self.players])
+        if all_started:
+            pass
+        # TODO
+        # - initialize all types of cards, card deck, map (number of cultists in each
+        #   location), player status e.g. sanity points

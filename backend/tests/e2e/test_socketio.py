@@ -5,7 +5,13 @@ import socketio
 
 from app.config import RTC_HOST, RTC_PORT
 from app.constant import RealTimeCommConst as RtcConst
-from app.dto import Investigator, Difficulty, RtcCharacterMsgData, RtcDifficultyMsgData
+from app.dto import (
+    Investigator,
+    Difficulty,
+    RtcCharacterMsgData,
+    RtcDifficultyMsgData,
+    RtcGameStartMsgData,
+)
 
 SERVER_URL = "http://%s:%s" % (RTC_HOST, RTC_PORT)
 
@@ -120,6 +126,13 @@ class MockClient(MockiAbstractClient):
         obj = RtcDifficultyMsgData.deserialize(evts[1])
         assert obj.level.value == expect
 
+    async def verify_game_start(self, expect_player):
+        evts: List = await self._sio_client.receive(timeout=3)
+        assert len(evts) == 2
+        assert evts[0] == RtcConst.EVENTS.GAME_START.value
+        obj = RtcGameStartMsgData.deserialize(evts[1])
+        assert obj.player_id == expect_player.player_id
+
 
 class MockiHttpServer(MockiAbstractClient):
     async def new_room(self, room_id: str, members: List[str]):
@@ -140,6 +153,10 @@ class MockiHttpServer(MockiAbstractClient):
     async def set_difficulty(self, room_id: str, level: Difficulty):
         data = RtcDifficultyMsgData.serialize(room_id, level)
         await self._sio_client.emit(RtcConst.EVENTS.DIFFICULTY.value, data=data)
+
+    async def confirm_start(self, room_id: str, player: str):
+        data = RtcGameStartMsgData.serialize(room_id, player)
+        await self._sio_client.emit(RtcConst.EVENTS.GAME_START.value, data=data)
 
 
 class TestRealTimeComm:
@@ -267,6 +284,13 @@ class TestRealTimeComm:
         await http_server.set_difficulty(game_room, level=Difficulty.STANDARD)
         await clients[0].verify_difficulty("standard")
         await clients[1].verify_difficulty("standard")
+
+        await http_server.confirm_start(game_room, clients[1].player_id)
+        await clients[0].verify_game_start(clients[1])
+        await clients[1].verify_game_start(clients[1])
+        await http_server.confirm_start(game_room, clients[0].player_id)
+        await clients[0].verify_game_start(clients[0])
+        await clients[1].verify_game_start(clients[0])
 
         for client in clients:
             await client.leave(room_id=game_room)
